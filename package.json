@@ -1,0 +1,14 @@
+{
+    "name": "cheetahvault",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "build": "cd frontend && npm install && npx vue-cli-service build",
+        "start": "cd server && node index.js",
+        "install": "cd frontend && npm install && cd ../server && npm install"
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "webport":8089,
+    "bindip":"0.0.0.0",
+
+    "uploadpath":"./uploads/",
+    "temppath":"./tmp/"
+}
