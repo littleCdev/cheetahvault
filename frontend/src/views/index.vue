@@ -89,7 +89,7 @@ a{
                             ></vue-player>
 
                             <!--- files, just show download icon --->
-                            <a :href="$url+'f/'+dialog.filepath+dialog.filename" 
+                            <a :href="$url+'f/'+dialog.filepath+dialog.filename+'/'+dialog.originalfilename" 
                                 :download="dialog.originalfilename"
                                  v-if="dialog.filetype == 'file'">
                                 <h2 class="white--text">
@@ -368,6 +368,7 @@ export default {
         },
     },
     created() {
+        document.onpaste = null;
         console.log(this.$url);
         eventHub.$on("editmode", () => {
             this.editmode = !this.editmode;
