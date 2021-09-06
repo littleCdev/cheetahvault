@@ -140,6 +140,9 @@
                 </v-card-text>
             </v-card>
         </v-dialog>
+       
+       
+       
         <v-main>
             <v-row>
                 <v-card
@@ -154,6 +157,7 @@
                     max-width="374"
                 >
                     <v-img
+                        v-if="file.filetype!='file'"
                         :width="file.thumbnailx"
                         :height="file.thumbnaily"
                         class="white--text align-end"
@@ -161,10 +165,23 @@
                         contain
                         :src="$url + 'f/' + file.filepath + file.thumbnail"
                     >
-                        <!--
-                            <v-card-title v-text="file.filename"></v-card-title>
-                            -->
                     </v-img>
+
+                    <v-img
+                        v-else
+                        :width="200"
+                        :height="200"
+                        class="white--text align-end"
+                        gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                        contain
+                        src="~@/assets/icon_file.png"
+                    >
+                        <v-card-title v-text="file.originalfilename"></v-card-title>
+                           
+                    </v-img>
+
+
+
                 </v-card>
             </v-row>
 
