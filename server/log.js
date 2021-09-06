@@ -3,6 +3,7 @@ let colors  = {
     red : "\x1b[31m",
     yellow : "\x1b[33m",
     white : "\x1b[37m",
+    blue: "\x1b[34m",
 }
 
 function _log(color,level,func,msg=null){
@@ -20,6 +21,10 @@ function _log(color,level,func,msg=null){
     }else{
         console.log(`${color}${datestr}\t${level}\t${func}\t${msg}${colors.reset}`);
     }
+}
+function debug(func,msg=null){
+    _log(colors.blue,"info",func,msg);
+
 }
 function info(func,msg=null){
     _log(colors.white,"info",func,msg);
