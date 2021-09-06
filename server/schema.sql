@@ -4,6 +4,9 @@ CREATE TABLE IF NOT EXISTS `files`(
     filetype            VARCHAR(255) NOT NULL DEFAULT '',
     filedate            VARCHAR(255) NOT NULL DEFAULT '',
     filetime            INTEGER NOT NULL DEFAULT 0,
+
+    filesize            INTEGER NOT NULL DEFAULT 0,
+    filesizestr         VARCHAR(255) NOT NULL DEFAULT '',
     
     /*exif > filedate > uploadtime */
     sortdate            VARCHAR(255) NOT NULL DEFAULT '',

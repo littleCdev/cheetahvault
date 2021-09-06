@@ -7,6 +7,7 @@ const Log = require("./log");
 const rndStr = require("./rnd").filename;
 const sharp = require('sharp');
 const simpledate = require("./helpers").DatetimeToStr;
+const humanfilesize = require("./helpers").humanFileSize;
 
 const { promisify } = require('util')
 const sizeOf = promisify(require('image-size'))
@@ -46,6 +47,9 @@ function fileExtension(filename){
 
     let orignalfilename = reqFile.originalname;
     let path = reqFile.path;
+    let originalfileSize = reqFile.size;
+    let originalfileSizeStr = humanfilesize(originalfileSize);
+
 try{
     let newfilename = rndStr(10,orignalfilename);
     let dir =  newfilename.substr(0,2)+"/"+newfilename.substr(1,2)+"/";
@@ -80,7 +84,7 @@ try{
 
     let originaldatestr = simpledate(orignaldate);
 
-    let dbres = await db.run("insert into files (originalfilename,filename,filepath,uploadtime,filetype,filedate,filetime) values (?,?,?,?,?,?,?)",
+    let dbres = await db.run("insert into files (originalfilename,filename,filepath,uploadtime,filetype,filedate,filetime,filesize,filesizestr) values (?,?,?,?,?,?,?,?,?)",
     [
         orignalfilename,
         newfilename,
@@ -88,7 +92,9 @@ try{
         ((new Date()/1000)),
         filetype,
         originaldatestr,
-        orignaldate
+        orignaldate,
+        originalfileSize,
+        originalfileSizeStr
     ]);
 
     let id = dbres.lastID;
