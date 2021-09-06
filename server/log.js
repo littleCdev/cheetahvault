@@ -39,6 +39,7 @@ function critical(func,msg=null){
 }
 
 module.exports = {
+    debug,
     info,
     warn,
     critical
