@@ -39,7 +39,7 @@
         <v-dialog v-model="dialogopen" v-if="dialog">
             <v-card class="whitebg">
                 <v-card-title class="justify-center">
-                    <h4 class="white--text">{{ dialog.filename }}</h4>
+                    <h4 class="white--text">{{ dialog.originalfilename }}</h4>
                 </v-card-title>
                 <v-card-text>
                     <v-row class="">
