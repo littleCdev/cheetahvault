@@ -30,6 +30,11 @@
     max-height: 80vh;
     max-width: 100%;
 }
+
+a{
+    /* i don't like the underline for links */
+    text-decoration: none;
+}
 </style>
 
 <template>
@@ -44,6 +49,8 @@
                 <v-card-text>
                     <v-row class="">
                         <v-col cols="9" class="text-center nopad-bottop">
+
+                            <!--- images/photos --->
                             <img
                                 v-if="dialog.filetype == 'image'"
                                 class="max100 fade"
@@ -62,6 +69,7 @@
                                 }"
                             />
 
+                            <!--- videos --->
                             <vue-player
                                 v-if="dialog.filetype == 'video'"
                                 class="video"
@@ -79,6 +87,18 @@
                                 "
                                 :autoplay="true"
                             ></vue-player>
+
+                            <!--- files, just show download icon --->
+                            <a :href="$url+'f/'+dialog.filepath+dialog.filename" 
+                                :download="dialog.originalfilename">
+                                <h2 class="white--text">
+                                    Download
+                                    <v-icon>mdi-download</v-icon>
+                                    <br>
+                                    {{dialog.originalfilename}}
+                                </h2>
+                            </a>
+
                         </v-col>
 
                         <v-col cols="3" class="white--text">
