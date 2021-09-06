@@ -118,7 +118,7 @@ app.get("/image/:ID/tags",async(req,res,next)=>{
 
 app.post("/upload",upload.single("file"),async function(req,res,next){
     try{
-        await cheetahFile.newFile(req.file.originalname,req.file.path,req.body.date)
+        await cheetahFile.newFile(req.file,req.body.date)
         res.send(newimage);
 
     }catch(e){

@@ -37,7 +37,15 @@ function fileExtension(filename){
     return "";
 }
 
-let newFile = async(orignalfilename,path,orignaldate)=>{
+/**
+ * 
+ * @param {file from express, req.file} reqFile 
+ * @param {unixtimestamp} orignaldate 
+ */
+ let newFile = async(reqFile,orignaldate)=>{
+
+    let orignalfilename = reqFile.originalname;
+    let path = reqFile.path;
 try{
     let newfilename = rndStr(10,orignalfilename);
     let dir =  newfilename.substr(0,2)+"/"+newfilename.substr(1,2)+"/";
