@@ -6,7 +6,7 @@ const db = require("./db");
 const Log = require("./log");
 const rndStr = require("./rnd").filename;
 const sharp = require('sharp');
-const simpledate = require("./datehelper").toStr;
+const simpledate = require("./helpers").DatetimeToStr;
 
 const { promisify } = require('util')
 const sizeOf = promisify(require('image-size'))
