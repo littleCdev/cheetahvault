@@ -253,11 +253,16 @@ export default {
         tags: ["testtag", "tag"],
     }),
     methods: {
+        /**
+         * page end trigger, tries to load the next page
+         */
         pageEndReached(/*entries, observer*/) {
             console.log(`pageEndReached`);
             this.loadNextPage();
         },
-
+        /**
+         * loads the next page
+         */
         async loadNextPage() {
             if (this.loading || this.endreached) return;
 
@@ -286,7 +291,9 @@ export default {
                 console.log(error);
             }
         },
-
+        /**
+         * marks currently selected file private or public
+         */
         async makePrivate() {
             try {
                 let data = null;
@@ -304,6 +311,9 @@ export default {
                 console.log(e);
             }
         },
+        /**
+         * gets tags for currently selected file
+         */
         async getTags() {
             console.log("getting tags");
             this.values = [];
@@ -314,6 +324,9 @@ export default {
                 console.log(e);
             }
         },
+        /**
+         * gets all existing tags -> this.tags
+         */
         async getAllTags() {
             try {
                 let data = await Axios.get("tags");
@@ -322,7 +335,9 @@ export default {
                 console.log(e);
             }
         },
-
+        /**
+         * saves  tags for the current open file
+         */
         async saveTags() {
             try {
                 await Axios.put(`image/${this.dialog.id}/tags`, {
@@ -333,6 +348,9 @@ export default {
             }
             this.getAllTags();
         },
+        /**
+         * filters tags for the tag autocomplete field so already assigned tags aren't showing up
+         */
         tagfilter(item, query, imtemText) {
             console.log(item);
             console.log(query);
@@ -344,6 +362,9 @@ export default {
 
             return 0;
         },
+        /**
+         * gets files using this.page and this.search
+         */
         async getFiles() {
             this.loading = true;
             this.endreached = true;
@@ -360,6 +381,9 @@ export default {
     },
 
     watch: {
+        /**
+         * checks if the dialog closed since it does not emit an event
+         */
         dialogopen: function (newValue) {
             if (!newValue) {
                 this.dialog = null;
@@ -368,11 +392,14 @@ export default {
         },
     },
     created() {
+
         document.onpaste = null;
         console.log(this.$url);
+        // edit mode from menubar
         eventHub.$on("editmode", () => {
             this.editmode = !this.editmode;
         });
+        // search event from menubar
         eventHub.$on("search", (search) => {
             console.log(`searching...  ${search}`);
             this.search = search;
