@@ -97,6 +97,8 @@ a{
                                     <v-icon>mdi-download</v-icon>
                                     <br>
                                     {{dialog.originalfilename}}
+                                    <br>
+                                    {{dialog.filesizestr}}
                                 </h2>
                             </a>
 
@@ -132,6 +134,9 @@ a{
                             <v-row v-else>
                                 <v-col cols="12"
                                     ><p>Date: {{ dialog.filedate }}</p></v-col
+                                >
+                                <v-col cols="12"
+                                    ><p :title="dialog.filesize">Size: {{ dialog.filesizestr }}</p></v-col
                                 >
                                 <v-col cols="12">
                                     Public
