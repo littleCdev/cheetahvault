@@ -54,9 +54,19 @@ app.get("/images/:PAGE?",async (req,res,next)=>{
     res.json(files);
 })
 
-app.get("/f/*",async (req,res,next)=>{
-    let f =  req.path.replace("/f","");
-    let x = path.join(__dirname,Config.uploadpath,f);
+
+/**
+ * enpoint to serve files
+ * DIR1 and DIR2 are only to verify FILENAME
+ * ORIGNALFILENAME is optional and not verified, it is only used for downloadlinks so browsers rename the file to given  name
+ */
+app.get("/f/:DIR1/:DIR2/:FILENAME/:ORIGNALNAME?",async (req,res,next)=>{
+    let givenpath = (req.params.DIR1||"")+"/"+(req.params.DIR2||"")+"/";
+    console.log(req.params)
+    let givenfilename = req.params.FILENAME||"";
+    let filepath = await cheetahFile.getFilePath(givenpath,givenfilename)
+    Log.debug(`filepath: ${filepath}`)
+    let x = path.join(__dirname,Config.uploadpath,filepath);
     console.log(x);
 
     res.sendFile(x)

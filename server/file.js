@@ -261,11 +261,37 @@ let getlatest = async (search="",page=0,n=20)=>{
     return images;
 }
 
+
+/**
+ * @param {string} givenpath uploaddir to check against 
+ * @param {string} filename or thumbname or videopreview
+ * @returns {string} filepath+filename (without uploadpath)
+ */
+let getFilePath = async(givenpath,filename)=>{
+    Log.info(`searching for ${filename}`)
+    let res = await db.all("select filepath from files where filename=? or thumbnail=? or videopreview=?",[filename,filename,filename]);
+
+    if(res.length !== 1){
+        Log.warn(`file ${filename} was not found in database`);
+        throw "file not found";
+    }
+
+    let path = res[0].filepath;
+    if(path!= givenpath){
+        Log.warn(`file ${filename}  paths did not match: ${path} != ${givenpath}`);
+        throw "file not found";
+    }
+
+
+    return path+filename;
+}
+
 module.exports={
     getlatest,
     newFile,
     makePrivate,
     setTags,
     getTags,
-    getAllTags
+    getAllTags,
+    getFilePath
 }
