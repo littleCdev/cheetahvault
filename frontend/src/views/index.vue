@@ -90,7 +90,8 @@ a{
 
                             <!--- files, just show download icon --->
                             <a :href="$url+'f/'+dialog.filepath+dialog.filename" 
-                                :download="dialog.originalfilename">
+                                :download="dialog.originalfilename"
+                                 v-if="dialog.filetype == 'file'">
                                 <h2 class="white--text">
                                     Download
                                     <v-icon>mdi-download</v-icon>
