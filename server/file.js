@@ -268,7 +268,7 @@ let getlatest = async (search="",page=0,n=20)=>{
  * @returns {string} filepath+filename (without uploadpath)
  */
 let getFilePath = async(givenpath,filename)=>{
-    Log.info(`searching for ${filename}`)
+    //Log.debug(`searching for ${filename}`)
     let res = await db.all("select filepath from files where filename=? or thumbnail=? or videopreview=?",[filename,filename,filename]);
 
     if(res.length !== 1){

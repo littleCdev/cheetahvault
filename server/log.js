@@ -4,6 +4,7 @@ let colors  = {
     yellow : "\x1b[33m",
     white : "\x1b[37m",
     blue: "\x1b[34m",
+    green: "\x1b[32m",
 }
 
 function _log(color,level,func,msg=null){
@@ -23,7 +24,7 @@ function _log(color,level,func,msg=null){
     }
 }
 function debug(func,msg=null){
-    _log(colors.blue,"info",func,msg);
+    _log(colors.green,"debug",func,msg);
 
 }
 function info(func,msg=null){

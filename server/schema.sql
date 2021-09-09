@@ -41,3 +41,10 @@ CREATE TABLE IF NOT EXISTS `tags`(
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
     name                VARCHAR(255) NOT NULL DEFAULT ''
 );
+
+
+CREATE TABLE IF NOT EXISTS `users`(
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    username            VARCHAR(255) NOT NULL,
+    password            VARCHAR(255) NOT NULL
+);

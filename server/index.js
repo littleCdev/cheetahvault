@@ -1,8 +1,7 @@
 const Log = require("./log.js");
-const path = require('path');               // Used for manipulation with path
 const fs = require('fs');             // Classic fs
 const Path = require('path');
-
+const cheetahFile = require("./file");
 const db = require("./db");
 
 
@@ -12,137 +11,54 @@ const Config = require("./config.json");
 const Express = require('express');
 const app = Express();
 
+app.use(Express.urlencoded({ extended: true }));
+
+app.set('trust proxy', 1) // trust first proxy
+const session = require('express-session')
+app.use(session({ 
+    secret: 'secrect?', 
+    resave:false,
+    cookie: {
+        sameSite:"none",
+        maxAge: 3600000 * 12 ,
+        httpOnly: true,
+        secure:true,
+    }
+})) 
 
 const bodyParser = require('body-parser')
 app.use(bodyParser.json())
 
 
-const multer  = require('multer')
-const upload = multer({ dest: Config.temppath })
-
-
-
-const cors = require("./cors");
-app.use(cors);
-
-
-const cheetahFile = require("./file");
-
-app.use(function(req, res, next){
-    res.setTimeout(480000, function(){ // 4 minute timeout adjust for larger uploads
-        console.log('Request has timed out.');
-            res.send(408);
-        });
-
-    next();
-});
+app.use(require("./cors"));
 
 
 /**
  * serve files from /dist/ directy
  */
- app.use(Express.static(Path.join(__dirname, '../frontend/dist/')));
+app.use(Express.static(Path.join(__dirname, '../frontend/dist/')));
 
 
-app.get("/images/:PAGE?",async (req,res,next)=>{
-
-    let page = req.params.PAGE||0;
-    let search = req.query.search||"";
-
-    let files = await cheetahFile.getlatest(search,page);
-
-    res.json(files);
-})
 
 
-/**
- * enpoint to serve files
- * DIR1 and DIR2 are only to verify FILENAME
- * ORIGNALFILENAME is optional and not verified, it is only used for downloadlinks so browsers rename the file to given  name
- */
-app.get("/f/:DIR1/:DIR2/:FILENAME/:ORIGNALNAME?",async (req,res,next)=>{
-    let givenpath = (req.params.DIR1||"")+"/"+(req.params.DIR2||"")+"/";
-    console.log(req.params)
-    let givenfilename = req.params.FILENAME||"";
-    let filepath = await cheetahFile.getFilePath(givenpath,givenfilename)
-    Log.debug(`filepath: ${filepath}`)
-    let x = path.join(__dirname,Config.uploadpath,filepath);
-    console.log(x);
 
-    res.sendFile(x)
-})
-
-
-app.put("/image/:ID/hidden",async(req,res,next)=>{
-    try{
-        await cheetahFile.makePrivate(req.params.ID,true);
-        res.send("ok");
-    }catch(e){
-        res.status = 500;
-        res.send("nok");
-    }
-})
-app.delete("/image/:ID/hidden",async(req,res,next)=>{
-    try{
-        await cheetahFile.makePrivate(req.params.ID,false);
-        res.send("ok");
-    }catch(e){
-        res.status = 500;
-        res.send("nok");
-    }
-})
-
-app.put("/image/:ID/tags",async(req,res,next)=>{
-    try{
-        await cheetahFile.setTags(req.params.ID,req.body.tags);
-        res.send("ok");
-    }catch(e){
-        res.status = 500;
-        res.send("nok");
-    }
-})
-
-
-app.get("/tags",async(req,res,next)=>{
-    try{
-        let tags = await cheetahFile.getAllTags();
-
-        res.send(tags);
-    }catch(e){
-        console.log(e);
-        res.status = 500;
-        res.send(e);
-    }
-})
-
-app.get("/image/:ID/tags",async(req,res,next)=>{
-    try{
-        let tags = await cheetahFile.getTags(req.params.ID);
-        res.send(tags);
-    }catch(e){
-        console.log(e);
-        res.status = 500;
-        res.send("nok");
-    }
-})
-
-app.post("/upload",upload.single("file"),async function(req,res,next){
-    try{
-        await cheetahFile.newFile(req.file,req.body.date)
-        res.send(newimage);
-
-    }catch(e){
-        res.status=500;
-        res.send(e);
-    }
-});
+app.use("/login/",require("./routes/login"));
+app.use("/tags/",require("./routes/tags"));
+app.use("/search/",require("./routes/search"));
+app.use("/files/",require("./routes/files"));
+app.use("/upload/",require("./routes/upload"));
 
 
 (async()=>{
-    await db.init();
-    await db.createSchema("schema.sql");
-    app.listen(Config.webport,Config.bindip,()=>{
-        Log.info(`Example app listening at http://${Config.bindip}:${Config.webport}`);
+    try{
+        await db.init();
+        await db.createSchema("schema.sql");
+        app.listen(Config.webport,Config.bindip,()=>{
+            Log.info(`Example app listening at http://${Config.bindip}:${Config.webport}`);
+    
+        });
+    }catch(e){
+        Log.critical(e);
+    }
 
-    });
 })();
