@@ -47,7 +47,7 @@
                 </p>
             </v-container>
         </v-overlay>
-        <Menu></Menu>
+        <Menu :noSearch="true"></Menu>
 
         <v-main>
             <div

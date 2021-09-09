@@ -10,11 +10,14 @@ Vue.config.productionTip = false;
 
 let url = ``;
 if(process.env.NODE_ENV == "development")
-    url = "http://localhost:8089/";
+    url = "https://cheetahstorage/api/cheetah/";
 
 import axios from "axios";
 
 axios.defaults.baseURL = url;
+axios.defaults.withCredentials = true
+
+
 Vue.prototype.$url = url;
 
 new Vue({ 

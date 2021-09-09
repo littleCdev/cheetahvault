@@ -56,7 +56,7 @@ a{
                                 class="max100 fade"
                                 :src="
                                     $url +
-                                    'f/' +
+                                    'files/' +
                                     dialog.filepath +
                                     dialog.filename
                                 "
@@ -75,13 +75,13 @@ a{
                                 class="video"
                                 :src="
                                     $url +
-                                    'f/' +
+                                    'files/' +
                                     dialog.filepath +
                                     dialog.filename
                                 "
                                 :poster="
                                     $url +
-                                    'f/' +
+                                    'files/' +
                                     dialog.filepath +
                                     dialog.videopreview
                                 "
@@ -89,7 +89,7 @@ a{
                             ></vue-player>
 
                             <!--- files, just show download icon --->
-                            <a :href="$url+'f/'+dialog.filepath+dialog.filename+'/'+dialog.originalfilename" 
+                            <a :href="$url+'files/'+dialog.filepath+dialog.filename+'/'+dialog.originalfilename" 
                                 :download="dialog.originalfilename"
                                  v-if="dialog.filetype == 'file'">
                                 <h2 class="white--text">
@@ -189,7 +189,7 @@ a{
                         class="white--text align-end"
                         gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                         contain
-                        :src="$url + 'f/' + file.filepath + file.thumbnail"
+                        :src="$url + 'files/' + file.filepath + file.thumbnail"
                     >
                     </v-img>
 
@@ -272,7 +272,7 @@ export default {
                 this.loading = true;
                 console.log(`loading new page: ${this.page}`);
                 let x = await Axios.get(
-                    `images/${this.page}?search=${this.search}`
+                    `search/${this.page}?search=${this.search}`
                 );
 
                 if (x.data.length == 0) {
@@ -299,11 +299,11 @@ export default {
                 let data = null;
                 if (this.dialog.showinindex) {
                     data = await Axios.delete(
-                        `image/${this.dialog.filename}/hidden`
+                        `files/${this.dialog.filename}/hidden/`
                     );
                 } else {
                     data = await Axios.put(
-                        `image/${this.dialog.filename}/hidden`
+                        `files/${this.dialog.filename}/hidden/`
                     );
                 }
                 console.log(data);
@@ -318,7 +318,7 @@ export default {
             console.log("getting tags");
             this.values = [];
             try {
-                let data = await Axios.get(`image/${this.dialog.id}/tags`);
+                let data = await Axios.get(`files/${this.dialog.id}/tags/`);
                 this.values = data.data;
             } catch (e) {
                 console.log(e);
@@ -329,7 +329,7 @@ export default {
          */
         async getAllTags() {
             try {
-                let data = await Axios.get("tags");
+                let data = await Axios.get("tags/");
                 this.tags = data.data;
             } catch (e) {
                 console.log(e);
@@ -340,7 +340,7 @@ export default {
          */
         async saveTags() {
             try {
-                await Axios.put(`image/${this.dialog.id}/tags`, {
+                await Axios.put(`files/${this.dialog.id}/tags/`, {
                     tags: this.values,
                 });
             } catch (e) {
@@ -369,13 +369,22 @@ export default {
             this.loading = true;
             this.endreached = true;
             this.page = 0;
-            let x = await Axios.get(
-                `images/${this.page}?search=${this.search}`
-            );
-            this.loading = false;
-            this.endreached = false;
+            try{
+                let x = await Axios.get(
+                    `search/${this.page}?search=${this.search}`
+                );
+                this.loading = false;
+                this.endreached = false;
 
-            this.files = x.data;
+                this.files = x.data;
+
+            }catch(error){
+                if(error.response.status == 403){
+                    this.$router.replace({
+                        name: "login"
+                    });
+                }
+            }
             console.log("getFiles done");
         },
     },

@@ -14,6 +14,16 @@ const routes = [
         component: () => import("../views/upload.vue"),
     },
     {
+        path: "/login",
+        name: "login",
+        component: () => import("../views/login.vue"),
+    },
+    {
+        path: "/logout",
+        name: "logout",
+        component: () => import("../views/logout.vue"),
+    },
+    {
         path: "*",
         name: "notfound",
         component: () => import("../views/404.vue"),
