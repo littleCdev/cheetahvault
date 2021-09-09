@@ -72,7 +72,6 @@ a {
 <script>
 import eventHub from "../components/eventhub";
 
-import eventhub from "../components/eventhub";
 export default {
     props:["noSearch","titleOnly"],
     methods: {
@@ -86,7 +85,7 @@ export default {
                 });
             }
 
-            eventhub.$emit("editmode");
+            eventHub.$emit("editmode");
         },
     },
     data: () => ({
