@@ -6,7 +6,8 @@ const db = require("./db");
 const Log = require("./log");
 const rndStr = require("./rnd").filename;
 const sharp = require('sharp');
-const simpledate = require("./datehelper").toStr;
+const simpledate = require("./helpers").DatetimeToStr;
+const humanfilesize = require("./helpers").humanFileSize;
 
 const { promisify } = require('util')
 const sizeOf = promisify(require('image-size'))
@@ -37,7 +38,18 @@ function fileExtension(filename){
     return "";
 }
 
-let newFile = async(orignalfilename,path,orignaldate)=>{
+/**
+ * 
+ * @param {file from express, req.file} reqFile 
+ * @param {unixtimestamp} orignaldate 
+ */
+ let newFile = async(reqFile,orignaldate)=>{
+
+    let orignalfilename = reqFile.originalname;
+    let path = reqFile.path;
+    let originalfileSize = reqFile.size;
+    let originalfileSizeStr = humanfilesize(originalfileSize);
+
 try{
     let newfilename = rndStr(10,orignalfilename);
     let dir =  newfilename.substr(0,2)+"/"+newfilename.substr(1,2)+"/";
@@ -72,7 +84,7 @@ try{
 
     let originaldatestr = simpledate(orignaldate);
 
-    let dbres = await db.run("insert into files (originalfilename,filename,filepath,uploadtime,filetype,filedate,filetime) values (?,?,?,?,?,?,?)",
+    let dbres = await db.run("insert into files (originalfilename,filename,filepath,uploadtime,filetype,filedate,filetime,filesize,filesizestr) values (?,?,?,?,?,?,?,?,?)",
     [
         orignalfilename,
         newfilename,
@@ -80,7 +92,9 @@ try{
         ((new Date()/1000)),
         filetype,
         originaldatestr,
-        orignaldate
+        orignaldate,
+        originalfileSize,
+        originalfileSizeStr
     ]);
 
     let id = dbres.lastID;
@@ -247,11 +261,52 @@ let getlatest = async (search="",page=0,n=20)=>{
     return images;
 }
 
+
+/**
+ * @param {string} givenpath uploaddir to check against 
+ * @param {string} filename or thumbname or videopreview
+ * @returns {string} filepath+filename (without uploadpath)
+ */
+let getFilePath = async(givenpath,filename)=>{
+    //Log.debug(`searching for ${filename}`)
+    let res = await db.all("select filepath from files where filename=? or thumbnail=? or videopreview=?",[filename,filename,filename]);
+
+    if(res.length !== 1){
+        Log.warn(`file ${filename} was not found in database`);
+        throw "file not found";
+    }
+
+    let path = res[0].filepath;
+    if(path!= givenpath){
+        Log.warn(`file ${filename}  paths did not match: ${path} != ${givenpath}`);
+        throw "file not found";
+    }
+
+
+    return path+filename;
+}
+
+/**
+ * key is equal to filename
+ * @param {string} key 
+ * @returns {int} id
+ */
+async function keyToId(key){
+    let res = await db.all("select id from files where filename=?",[key]);
+
+    if(res.length == 0)
+        throw `File ${key} does not exist`;
+
+    return res[0].id;
+}
+
 module.exports={
     getlatest,
     newFile,
     makePrivate,
     setTags,
     getTags,
-    getAllTags
+    getAllTags,
+    getFilePath,
+    keyToId
 }

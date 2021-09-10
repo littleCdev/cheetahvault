@@ -3,6 +3,8 @@ let colors  = {
     red : "\x1b[31m",
     yellow : "\x1b[33m",
     white : "\x1b[37m",
+    blue: "\x1b[34m",
+    green: "\x1b[32m",
 }
 
 function _log(color,level,func,msg=null){
@@ -21,6 +23,10 @@ function _log(color,level,func,msg=null){
         console.log(`${color}${datestr}\t${level}\t${func}\t${msg}${colors.reset}`);
     }
 }
+function debug(func,msg=null){
+    _log(colors.green,"debug",func,msg);
+
+}
 function info(func,msg=null){
     _log(colors.white,"info",func,msg);
 }
@@ -34,6 +40,7 @@ function critical(func,msg=null){
 }
 
 module.exports = {
+    debug,
     info,
     warn,
     critical
