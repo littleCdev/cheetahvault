@@ -286,6 +286,20 @@ let getFilePath = async(givenpath,filename)=>{
     return path+filename;
 }
 
+/**
+ * key is equal to filename
+ * @param {string} key 
+ * @returns {int} id
+ */
+async function keyToId(key){
+    let res = await db.all("select id from files where filename=?",[key]);
+
+    if(res.length == 0)
+        throw `File ${key} does not exist`;
+
+    return res[0].id;
+}
+
 module.exports={
     getlatest,
     newFile,
@@ -293,5 +307,6 @@ module.exports={
     setTags,
     getTags,
     getAllTags,
-    getFilePath
+    getFilePath,
+    keyToId
 }

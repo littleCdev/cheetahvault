@@ -1,7 +1,6 @@
 const Log = require("./log.js");
 const fs = require('fs');             // Classic fs
 const Path = require('path');
-const cheetahFile = require("./file");
 const db = require("./db");
 
 
@@ -15,9 +14,12 @@ app.use(Express.urlencoded({ extended: true }));
 
 app.set('trust proxy', 1) // trust first proxy
 const session = require('express-session')
+var FileStore = require('session-file-store')(session);
 app.use(session({ 
+    store: new FileStore({}),
     secret: 'secrect?', 
     resave:false,
+    saveUninitialized:true,
     cookie: {
         sameSite:"none",
         maxAge: 3600000 * 12 ,
@@ -46,6 +48,7 @@ app.use("/login/",require("./routes/login"));
 app.use("/tags/",require("./routes/tags"));
 app.use("/search/",require("./routes/search"));
 app.use("/files/",require("./routes/files"));
+app.use("/albums/",require("./routes/albums"));
 app.use("/upload/",require("./routes/upload"));
 
 

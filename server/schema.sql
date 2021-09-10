@@ -48,3 +48,17 @@ CREATE TABLE IF NOT EXISTS `users`(
     username            VARCHAR(255) NOT NULL,
     password            VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS `albums`(
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    albumname           VARCHAR(255) NOT NULL DEFAULT '',
+    albumdate           VARCHAR(255) NOT NULL DEFAULT '',
+    albumtime           INTEGER NOT NULL DEFAULT 0,
+    albumkey            VARCHAR(255) NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS `albummap`(
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    fileid              INTEGER NOT NULL,
+    albumid             INTEGER NOT NULL
+);
