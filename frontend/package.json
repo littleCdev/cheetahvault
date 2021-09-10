@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "@algoz098/vue-player": "^0.4.3",
+        "@egjs/vue-infinitegrid": "^4.0.0",
         "axios": "^0.21.1",
         "core-js": "^3.6.5",
         "vue": "^2.6.11",

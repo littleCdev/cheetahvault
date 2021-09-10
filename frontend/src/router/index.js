@@ -14,6 +14,11 @@ const routes = [
         component: () => import("../views/upload.vue"),
     },
     {
+        path: "/album/:key",
+        name: "album",
+        component: () => import("../views/album.vue"),
+    },
+    {
         path: "/login",
         name: "login",
         component: () => import("../views/login.vue"),

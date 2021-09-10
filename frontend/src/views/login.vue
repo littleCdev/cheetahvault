@@ -10,34 +10,34 @@
         <v-main >
             <v-container fluid fill-height class="">
                 <v-layout align-center justify-center>
-                <v-flex xs12 sm8 md4>
-                    <v-card class="grey darken-1">
-                        <v-card-text>
-                            <v-form>
-                            <v-text-field
-                                prepend-icon="mdi-person"
-                                name="Username"
-                                label="Username"
-                                type="text"
-                                v-model="username"
-                                @keydown.enter="login"
-                            ></v-text-field>
-                            <v-text-field
-                                prepend-icon="mdi-lock"
-                                name="Password"
-                                label="Password"
-                                type="password"
-                                @keydown.enter="login"
-                                v-model="password"
-                            ></v-text-field>
-                            </v-form>
-                        </v-card-text>
-                        <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn color="gray" @click.stop="login">{{btnText}}</v-btn>
-                        </v-card-actions>
-                    </v-card>
-                </v-flex>
+                    <v-flex xs12 sm8 md4>
+                        <v-card class="grey darken-1">
+                            <v-card-text>
+                                <v-form>
+                                <v-text-field
+                                    prepend-icon="mdi-person"
+                                    name="Username"
+                                    label="Username"
+                                    type="text"
+                                    v-model="username"
+                                    @keydown.enter="login"
+                                ></v-text-field>
+                                <v-text-field
+                                    prepend-icon="mdi-lock"
+                                    name="Password"
+                                    label="Password"
+                                    type="password"
+                                    @keydown.enter="login"
+                                    v-model="password"
+                                ></v-text-field>
+                                </v-form>
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn color="gray" @click.stop="login">{{btnText}}</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-flex>
                 </v-layout>
             </v-container>
         </v-main>
