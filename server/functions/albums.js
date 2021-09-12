@@ -73,10 +73,10 @@ async function removeFile(albumid,fileid){
 
 /**
  * gets all existing albums
- * @returns {array}
+ * @returns {album info id,albumname,albumedate,albumtime,albumkey,imagecount}
  */
 async function getAll(){
-    let res = await db.all("select * from albums");
+    let res = await db.all("select albums.*,count(albums.id) as imagecount from albums join albummap on albummap.albumid=albums.id group by albums.id");
 
     return res;
 }
@@ -111,10 +111,11 @@ async function getFiles(key){
 /**
  * 
  * @param {int} id 
- * @returns {object} album info id,albumname,albumedate,albumtime,albumkey
+ * @returns {object} album info id,albumname,albumedate,albumtime,albumkey,imagecount
  */
 async function getInfo(id){
-    let info = await db.all("select * from albums where id=?",[id]);
+//    let info = await db.all("select * from albums where id=?",[id]);
+    let info = await db.all("select albums.*,count(albums.id) as imagecount from albums join albummap on albummap.albumid=albums.id where albums.id=?",[id]);
 
     if(info.length == 0)
         throw "album not found";
