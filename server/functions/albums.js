@@ -64,10 +64,11 @@ async function addFile(albumid,fileid){
  * @param {int} fileid 
  */
 async function removeFile(albumid,fileid){
-    await db.run("remove from albummap where fileid=? and albumid=?",[
+    await db.run("delete from albummap where fileid=? and albumid=?",[
         fileid,
         albumid
     ]);
+    Log.info(`removed ${fileid} from ${albumid}`);
 }
 
 /**
@@ -131,6 +132,19 @@ async function setName(id,name){
         throw `updated ${res.changes} rows but expected 1 for albumid:${id}`
 }
 
+/**
+ * deletes the whole album
+ * @param {int} id 
+ */
+async function deleteAlbum(id){
+    // delete all files from album first
+    let res = await db.run("delete from albummap where albumid=?",[id])
+    Log.info(`removed ${res.changes} files from album  ${id}`);
+
+    res = await db.run("delete from albums where id=?",[id]);
+    Log.info(`deleted album ${id}`)
+}
+
 module.exports = {
     craeteNew,
     addFile,
@@ -139,5 +153,6 @@ module.exports = {
     keyToId,
     getFiles,
     getInfo,
-    setName
+    setName,
+    deleteAlbum
 }

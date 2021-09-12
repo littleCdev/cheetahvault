@@ -63,7 +63,7 @@ routes.put("/",async(req,res,next)=>{
 /**
  * adds an given file to an album
  */
-routes.put("/:KEY/files",async(req,res,next)=>{
+ routes.put("/:KEY/files",async(req,res,next)=>{
     Log.info(`adding the following files to ${req.params.KEY}`);
     Log.info(req.body.files);
 
@@ -90,7 +90,51 @@ routes.put("/:KEY/files",async(req,res,next)=>{
         console.log(e);
     }
 })
-
+/**
+* ´removes an given file to an album
+*/
+routes.post("/:KEY/files",async(req,res,next)=>{
+    Log.info(`removing the following files from ${req.params.KEY}`);
+    Log.info(req.body.files);
+ 
+    try{
+        if(typeof req.body.files != "object")
+            throw `files needs to be an array (${typeof req.body.files})`;
+        for (let i = 0; i < req.body.files.length; i++) {
+            if(typeof req.body.files[i] != "string")
+                throw `only strings allowed for filekeys (${typeof req.body.files[i]})`;
+        }
+        
+        let albumId = await Albums.keyToId(req.params.KEY);
+ 
+        for (let i = 0; i < req.body.files.length; i++) {
+            const fileKey = req.body.files[i];
+ 
+            let fileId = await Files.keyToId(fileKey);
+ 
+            await Albums.removeFile(albumId,fileId)
+        }
+        
+        res.send()
+    }catch(e){
+        console.log(e);
+    }
+ })
+/**
+ * deletes the album
+ */
+routes.delete("/:KEY/",async(req,res,next)=>{
+    Log.info(`deleting the following album to ${req.params.KEY}`);
+ 
+    try{
+        let albumId = await Albums.keyToId(req.params.KEY);
+        await Albums.deleteAlbum(albumId);
+        res.send()
+    }catch(e){
+        console.log(e);
+    }
+ })
+  
 routes.put("/:KEY/name",async(req,res,next)=>{
     Log.info(`updating name for ${req.params.KEY} to ${req.body.title}`);
     try {
@@ -104,21 +148,6 @@ routes.put("/:KEY/name",async(req,res,next)=>{
     }
 });
 
-/**
- * removes an given file to an album
- */
-routes.put("/:KEY/:FILE",async(req,res,next)=>{
-    Log.debug(`tryin to add ${req.params.FILE} to album: ${req.params.KEY}`);
-    try{
-        let albumId = Albums.keyToId(req.params.KEY);
-        let fileId = Files.keyToId(req.params.FILE);
-    
-        await Albums.removeFile(albumId,fileId)
-        res.send()
-    }catch(e){
-        console.log(e);
-    }
-})
 
 /**
  * returns tags of an file
