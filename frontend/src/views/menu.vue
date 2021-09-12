@@ -50,19 +50,28 @@ a {
                 </template>
 
                 <v-list>
-                    <v-list-item>
-                        <v-list-item-title @click="editmode"
-                            >Editmode</v-list-item-title
-                        >
-                    </v-list-item>
-                    <v-list-item>
-                        <v-list-item-title>
-                            <router-link :to="{name:'logout'}" class="black--text">
-                                Logout
-                            </router-link>
-                            </v-list-item-title
-                        >
-                    </v-list-item>
+                    <v-list-item-group>
+                        <v-list-item>
+                            <v-list-item-title @click="editmode"
+                                >Editmode</v-list-item-title
+                            >
+                        </v-list-item>
+
+                        <v-list-item>
+                            <v-list-item-title @click="emitAction('deletealbum')"
+                                >Delete album</v-list-item-title
+                            >
+                        </v-list-item>
+
+                        <v-list-item>
+                            <v-list-item-title>
+                                <router-link :to="{name:'logout'}" class="black--text">
+                                    Logout
+                                </router-link>
+                                </v-list-item-title
+                            >
+                        </v-list-item>
+                    </v-list-item-group>
                 </v-list>
             </v-menu>
         </template>
@@ -73,7 +82,19 @@ a {
 import eventHub from "../components/eventhub";
 
 export default {
-    props:["noSearch","titleOnly"],
+    props:{
+        "noSearch":{
+            type:Boolean
+        },
+        "titleOnly":{
+            type:Boolean
+        },
+        album:{
+            type:Boolean,
+            optional:true,
+            default:false
+        }
+    },
     methods: {
         search() {
             eventHub.$emit("search", this.searchvalue);
@@ -87,6 +108,9 @@ export default {
 
             eventHub.$emit("editmode");
         },
+        emitAction(action){
+            eventHub.$emit(action)
+        }
     },
     data: () => ({
         searchvalue: "",

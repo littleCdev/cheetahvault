@@ -33,7 +33,7 @@ a {
                 <v-tooltip bottom>
                     <template v-slot:activator="{on,attr}">
                         <a href="#delete"
-                            @click.stop="clear()"
+                            @click.stop="emitAction('clear')"
                             v-bind="attr"
                             v-on="on">
                             <v-icon class="white--text"> mdi-close</v-icon>
@@ -45,10 +45,11 @@ a {
             </v-toolbar-title>
         <v-spacer></v-spacer>
 
+        <template v-if="!album">
             <v-toolbar-title class="action-icon">
                 <v-tooltip bottom>
                     <template v-slot:activator="{on,attr}">
-                        <a href="#" @click.stop="album()">
+                        <a href="#" @click.stop="emitAction('album')">
                             <v-icon class="white--text"
                                 v-bind="attr"
                                 v-on="on"
@@ -62,7 +63,7 @@ a {
             <v-toolbar-title class="action-icon">
                 <v-tooltip bottom>
                     <template v-slot:activator="{on,attr}">
-                        <a href="#delete" @click.stop="filedelete()">
+                        <a href="#delete" @click.stop="emitAction('delete')">
                             <v-icon class="white--text"
                                 v-bind="attr"
                                 v-on="on"
@@ -73,6 +74,42 @@ a {
                     Delete selected files
                 </v-tooltip>
             </v-toolbar-title>
+        </template>
+
+        <!-- show dropdown on albumpage -->
+        <template v-else>
+            <v-menu bottom left>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn dark icon v-bind="attrs" v-on="on">
+                        <v-icon>mdi-cog</v-icon>
+                    </v-btn>
+                </template>
+
+                <v-list>
+                    <v-list-item-group>
+                        <v-list-item>
+                            <v-list-item-title @click="emitAction('album')">
+                                <v-icon class="black--text">mdi-image-plus</v-icon>
+                                Add files to an album
+                            </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item>
+                            <v-list-item-title @click="emitAction('remove')">
+                                <v-icon class="black--text">mdi-delete</v-icon>
+                                Remove files from Album
+                            </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item>
+                            <v-list-item-title @click="emitAction('delete')">
+                                <v-icon class="black--text" >mdi-delete</v-icon>
+                                Delete files
+                            </v-list-item-title>
+                        </v-list-item>
+
+                    </v-list-item-group>
+                </v-list>
+            </v-menu>
+        </template>
     </v-app-bar>
 </template>
 
@@ -80,16 +117,17 @@ a {
 import eventHub from "../components/eventhub";
 
 export default {
+    props:{
+        album:{
+            type: Boolean,
+            optional:true,
+            default:false
+        }
+    },
     methods: {
-        album() {
-            eventHub.$emit("album", "");
-        },
-        filedelete() {
-            eventHub.$emit("delete", "");
-        },
-        clear() {
-            eventHub.$emit("clear", "");
-        },
+        emitAction(action){
+            eventHub.$emit(action,"");
+        }
     },
     data: () => ({
     }),

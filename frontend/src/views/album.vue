@@ -63,7 +63,7 @@ a{
 <template>
     <div>
         <Menu v-if="markedFiles < 1" :key="markedFiles"></Menu>
-        <MenuSelected v-if="markedFiles > 0" :key="markedFiles"></MenuSelected>
+        <MenuSelected v-if="markedFiles > 0" :album=true :key="markedFiles"></MenuSelected>
 
         <v-dialog v-model="dialogopen" v-if="dialog">
             <v-card class="whitebg">
@@ -314,7 +314,43 @@ export default {
         tags: ["testtag", "tag"],
     }),
     methods: {
+        async deleteAlbum(){
+            try {
+                await axios.delete(`albums/${this.albumKey}/`)
+                this.$router.replace({
+                        name: "index"
+                    });
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        async removeFiles(){
+            try {
+                let fileKeys = [];
+                for (let i = 0; i < this.files.length; i++) {
+                    if(this.files[i].marked)
+                        fileKeys.push(this.files[i].filename);
+                }
+                this.loading = true;
+                await axios.post(`albums/${this.albumKey}/files`,{
+                    files:fileKeys
+                })
 
+                for (let i = this.files.length-1; i >= 0; i--) {
+                    console.log(i);
+                    if(this.files[i].marked)
+                        this.files.splice(i,1);
+                }
+
+                this.markedFiles = 0;
+                this.markedFilesArray = [];
+
+            } catch (error) {   
+                console.log(error);
+            }finally{
+                this.loading = false;
+            }
+        },
         /**
          * resets the albumtitle to original
          */
@@ -503,6 +539,14 @@ export default {
 
         eventHub.$on("addToAlbumClosed", () => {
             this.albumDialogOpen = false;
+        });
+
+        eventHub.$on("remove", () => {
+            this.removeFiles();
+        });
+
+        eventHub.$on("deletealbum", () => {
+            this.deleteAlbum();
         });
     },
     mounted() {

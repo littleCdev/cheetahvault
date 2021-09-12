@@ -68,8 +68,8 @@ a{
             <AddToAblumDialog :files="markedFilesArray" ></AddToAblumDialog>
         </template>
 
-        <Menu v-if="markedFiles < 1" :key="markedFiles"></Menu>
-        <MenuSelected v-if="markedFiles > 0" :key="markedFiles"></MenuSelected>
+        <Menu v-if="markedFiles < 1"  :album=false></Menu>
+        <MenuSelected v-if="markedFiles > 0" :album=false ></MenuSelected>
 
         <v-dialog v-model="dialogopen" v-if="dialog">
             <v-card class="whitebg">
