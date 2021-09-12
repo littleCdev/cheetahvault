@@ -210,9 +210,14 @@ a{
                                 class="albumlist"
                                 @click="$router.push({name:'album',params:{'key':album.albumkey}})"
                             >  
-                                <v-list-item-title>
-                                    {{album.albumname}}
-                                </v-list-item-title>
+                                <v-list-item-content>
+                                    <v-list-item-title>
+                                        {{album.albumname}}
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle>
+                                        {{album.imagecount}} files
+                                    </v-list-item-subtitle>
+                                </v-list-item-content>
 
                             </v-list-item>
                         </v-list-item-group>
