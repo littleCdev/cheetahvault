@@ -234,11 +234,7 @@ a{
                             :key="index"
                         >
                             <v-card    
-                                @click="
-                                    dialog = item;
-                                    dialogopen = true;
-                                    getTags();
-                                "
+                                @click="openOrMark(item)"
                                 class="mx-auto my-12 hoveractivator"
                             >
                                 <v-img 
@@ -342,6 +338,21 @@ export default {
         loginChecked:false, // prevent the pageEndReachedEvent from firing before login was checked in mounted();
     }),
     methods: {
+        /**
+         * opens or marks file
+         * if there is more than one file selected the popup wont open and the file will be selected
+         */
+        openOrMark(file){
+            if(this.markedFiles > 0){
+                this.markFile(file);
+                return;
+            }
+            // open dialog
+            
+            this.dialog = file;
+            this.dialogopen = true;
+            this.getTags();
+        },
         markFile(file){
             file.marked = !file.marked;
     
