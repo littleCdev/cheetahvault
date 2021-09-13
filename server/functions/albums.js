@@ -64,18 +64,19 @@ async function addFile(albumid,fileid){
  * @param {int} fileid 
  */
 async function removeFile(albumid,fileid){
-    await db.run("remove from albummap where fileid=? and albumid=?",[
+    await db.run("delete from albummap where fileid=? and albumid=?",[
         fileid,
         albumid
     ]);
+    Log.info(`removed ${fileid} from ${albumid}`);
 }
 
 /**
  * gets all existing albums
- * @returns {array}
+ * @returns {album info id,albumname,albumedate,albumtime,albumkey,imagecount}
  */
 async function getAll(){
-    let res = await db.all("select * from albums");
+    let res = await db.all("select albums.*,count(albums.id) as imagecount from albums join albummap on albummap.albumid=albums.id group by albums.id");
 
     return res;
 }
@@ -110,10 +111,11 @@ async function getFiles(key){
 /**
  * 
  * @param {int} id 
- * @returns {object} album info id,albumname,albumedate,albumtime,albumkey
+ * @returns {object} album info id,albumname,albumedate,albumtime,albumkey,imagecount
  */
 async function getInfo(id){
-    let info = await db.all("select * from albums where id=?",[id]);
+//    let info = await db.all("select * from albums where id=?",[id]);
+    let info = await db.all("select albums.*,count(albums.id) as imagecount from albums join albummap on albummap.albumid=albums.id where albums.id=?",[id]);
 
     if(info.length == 0)
         throw "album not found";
@@ -131,6 +133,19 @@ async function setName(id,name){
         throw `updated ${res.changes} rows but expected 1 for albumid:${id}`
 }
 
+/**
+ * deletes the whole album
+ * @param {int} id 
+ */
+async function deleteAlbum(id){
+    // delete all files from album first
+    let res = await db.run("delete from albummap where albumid=?",[id])
+    Log.info(`removed ${res.changes} files from album  ${id}`);
+
+    res = await db.run("delete from albums where id=?",[id]);
+    Log.info(`deleted album ${id}`)
+}
+
 module.exports = {
     craeteNew,
     addFile,
@@ -139,5 +154,6 @@ module.exports = {
     keyToId,
     getFiles,
     getInfo,
-    setName
+    setName,
+    deleteAlbum
 }

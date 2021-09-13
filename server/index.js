@@ -1,5 +1,4 @@
 const Log = require("./log.js");
-const fs = require('fs');             // Classic fs
 const Path = require('path');
 const db = require("./db");
 
@@ -43,7 +42,9 @@ app.use(Express.static(Path.join(__dirname, '../frontend/dist/')));
 
 
 
-
+/**
+ * add routes
+ */
 app.use("/login/",require("./routes/login"));
 app.use("/tags/",require("./routes/tags"));
 app.use("/search/",require("./routes/search"));
@@ -51,6 +52,18 @@ app.use("/files/",require("./routes/files"));
 app.use("/albums/",require("./routes/albums"));
 app.use("/upload/",require("./routes/upload"));
 
+/**
+ * errorhandler that's called from next(err) inside asyncHandler
+ */
+app.use(async(err,req,res,next)=>{
+    Log.critical(err)
+    res.status(500)
+    if(typeof err == "string"){
+        res.send({message:err})
+    }else{
+        res.json(err);
+    }
+});
 
 (async()=>{
     try{
