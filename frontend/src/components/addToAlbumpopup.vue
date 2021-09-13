@@ -5,6 +5,9 @@
 <template>
     <v-dialog v-model="open">
         <v-card>
+            <v-card-title>
+                Add {{files.length}} files to 
+            </v-card-title>
             <v-card-text>
                 <v-row >
                     <v-col cols="12">
