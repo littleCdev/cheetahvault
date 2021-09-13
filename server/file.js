@@ -50,7 +50,7 @@ function fileExtension(filename){
     let originalfileSize = reqFile.size;
     let originalfileSizeStr = humanfilesize(originalfileSize);
 
-try{
+
     let newfilename = rndStr(10,orignalfilename);
     let dir =  newfilename.substr(0,2)+"/"+newfilename.substr(1,2)+"/";
 
@@ -140,7 +140,7 @@ try{
 
         exifdate = _date+" "+parts[1];
 
-        console.log(`new exifdate: ${exifdate}`)
+        Log.info(`new exifdate: ${exifdate}`)
     }catch(e){
         Log.info(`exif failed for ${newfilename}`);
         Log.info(e);
@@ -151,14 +151,7 @@ try{
         id
     ]);
 
-
-
-
-}catch(e){
-    console.log(e);
-    throw e;
-}
-
+    return id;
 }
 
 
