@@ -62,7 +62,7 @@ a{
 
 <template>
     <div>
-        <Menu v-if="markedFiles < 1" :key="markedFiles"></Menu>
+        <Menu v-if="markedFiles < 1" :key="markedFiles" :album=true></Menu>
         <MenuSelected v-if="markedFiles > 0" :album=true :key="markedFiles"></MenuSelected>
 
         <v-dialog v-model="dialogopen" v-if="dialog">
