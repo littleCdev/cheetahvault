@@ -57,7 +57,7 @@ routes.post("",asyncHandler(async (req,res,next)=>{
         res.json({name:req.session.userid});
     }else{
         res.status(403);
-        res.send("");     
+        res.send({message:"invalid password or username"});     
     }
 }));
 

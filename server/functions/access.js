@@ -5,7 +5,7 @@ async function public(req,res,next){
 async function userOnly(req,res,next){
     if(!req.session.userid){
         res.status(403);
-        res.send("forbidden");
+        res.send({message:"forbidden"});
 
         return;
     }
