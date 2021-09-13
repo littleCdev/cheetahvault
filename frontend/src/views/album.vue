@@ -285,6 +285,8 @@ import MenuSelected from "./menuselected.vue"; // menu if items are selected (de
 import eventHub from "../components/eventhub";
 import { MasonryInfiniteGrid } from "@egjs/vue-infinitegrid";
 import axios from 'axios';
+import axiosError  from "../components/checkAjaxError";
+import trylogin from "../components/checkLogin";
 
 export default {
     data: () => ({
@@ -322,6 +324,7 @@ export default {
                     });
             } catch (error) {
                 console.log(error);
+                axiosError(error);
             }
         },
         async removeFiles(){
@@ -347,6 +350,7 @@ export default {
 
             } catch (error) {   
                 console.log(error);
+                axiosError(error);
             }finally{
                 this.loading = false;
             }
@@ -366,6 +370,7 @@ export default {
                 console.log("saved new name")
             } catch (error) {
                 console.log(error);
+                axiosError(error);
             }
         },
         markFile(file){
@@ -403,6 +408,7 @@ export default {
                 console.log(data);
             } catch (e) {
                 console.log(e);
+                axiosError(e);
             }
         },
         /**
@@ -416,6 +422,7 @@ export default {
                 this.values = data.data;
             } catch (e) {
                 console.log(e);
+                axiosError(e);
             }
         },
         /**
@@ -427,6 +434,7 @@ export default {
                 this.tags = data.data;
             } catch (e) {
                 console.log(e);
+                axiosError(e);
             }
         },
         /**
@@ -439,6 +447,7 @@ export default {
                 });
             } catch (e) {
                 console.log(e);
+                axiosError(e);
             }
             this.getAllTags();
         },
@@ -489,7 +498,9 @@ export default {
                     this.$router.replace({
                         name: "login"
                     });
+                    return;
                 }
+                axiosError(error);
             }
             console.log("getFiles done");
         },
@@ -549,7 +560,17 @@ export default {
             this.deleteAlbum();
         });
     },
-    mounted() {
+    async mounted() {
+        let result =await trylogin();
+        console.log(result);
+        if(result !== "user"){
+            console.log("user not logged in, forwarding");
+            this.$router.replace({
+                name: "login"
+            });
+            return;
+        }
+
         this.albumKey = this.$route.params.key;
         this.getFiles();
         this.getAllTags();

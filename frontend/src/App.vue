@@ -16,13 +16,21 @@ body {
 <template>
     <v-app class="transparent">
         <router-view></router-view>
+        <modal />
+        <toast />
     </v-app>
 </template>
 
 <script>
+import modal from "./components/modaltemplate.vue"  
+import toast from "./components/toasttemplate.vue"  
+
 export default {
     name: "App",
-
+    components: {
+        modal,
+        toast
+    },
     data: () => ({
         //
     }),

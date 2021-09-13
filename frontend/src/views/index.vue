@@ -310,6 +310,8 @@ import AddToAblumDialog from "../components/addToAlbumpopup.vue";
 import eventHub from "../components/eventhub";
 import { MasonryInfiniteGrid } from "@egjs/vue-infinitegrid";
 import axios from 'axios';
+import axiosError  from "../components/checkAjaxError";
+import trylogin from "../components/checkLogin";
 
 export default {
     data: () => ({
@@ -336,6 +338,8 @@ export default {
 
         values: [],
         tags: ["testtag", "tag"],
+
+        loginChecked:false, // prevent the pageEndReachedEvent from firing before login was checked in mounted();
     }),
     methods: {
         markFile(file){
@@ -359,6 +363,9 @@ export default {
          * page end trigger, tries to load the next page
          */
         pageEndReached(/*entries, observer*/) {
+            if(!this.loginChecked) 
+                return;
+
             console.log(`pageEndReached`);
             this.loadNextPage();
         },
@@ -392,6 +399,7 @@ export default {
                 this.loading = false;
             } catch (error) {
                 console.log(error);
+                axiosError(error);
             }
         },
         /**
@@ -412,6 +420,7 @@ export default {
                 console.log(data);
             } catch (e) {
                 console.log(e);
+                axiosError(e);
             }
         },
         /**
@@ -425,6 +434,7 @@ export default {
                 this.values = data.data;
             } catch (e) {
                 console.log(e);
+                axiosError(e);
             }
         },
         /**
@@ -436,6 +446,7 @@ export default {
                 this.tags = data.data;
             } catch (e) {
                 console.log(e);
+                axiosError(e);
             }
         },
         /**
@@ -448,6 +459,7 @@ export default {
                 });
             } catch (e) {
                 console.log(e);
+                axiosError(e);
             }
             this.getAllTags();
         },
@@ -492,7 +504,9 @@ export default {
                     this.$router.replace({
                         name: "login"
                     });
+                    return;
                 }
+                axiosError(error);
             }
             console.log("getFiles done");
         },
@@ -504,6 +518,7 @@ export default {
                 let res = await axios.get("/albums/");
                 this.albums = res.data;
             } catch (error) {
+                axiosError(error);
                 console.log(error);
             }
         }
@@ -560,10 +575,22 @@ export default {
             this.albumDialogOpen = false;
         });
     },
-    mounted() {
+    async mounted() {
+        let result =await trylogin();
+        console.log(result);
+        if(result !== "user"){
+            console.log("user not logged in, forwarding");
+            this.$router.replace({
+                name: "login"
+            });
+            return;
+        }
+        
+        this.loginChecked = true;
         this.getFiles();
         this.getAllTags();
         this.getAlbums();
+
     },
     components: {
         Menu,

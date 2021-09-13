@@ -11,6 +11,8 @@ async function login(){
             return "login";
         }else if(error.response.status == 303){
             return "signup";
+        }else{
+            throw error;
         }
     }
 }
