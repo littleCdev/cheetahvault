@@ -47,7 +47,7 @@
                 </p>
             </v-container>
         </v-overlay>
-        <Menu></Menu>
+        <Menu :noSearch="true"></Menu>
 
         <v-main>
             <div
@@ -109,6 +109,33 @@ export default {
         files: [],
     }),
     methods: {
+        /**
+         * handles files that are pasted from clipboard and adds them to the uploadqueue
+         */
+        pasteevent(event){
+            console.log("pasted");
+            let items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            
+            for (let index in items) {
+                let item = items[index];
+                if (item.kind === 'file') {
+                    let blob = item.getAsFile();
+                    console.log(blob);
+                    let file = {
+                        date: blob.lastModified,
+                        file: blob,
+                        name: blob.name,
+                        progress: 0,
+                        thumbnail: "",
+                    };
+                    this.files.push(file);
+                    this.upload(file);
+                }
+            }
+        },
+        /**
+         * handles files from the dropevent and adds them to the uploadqueue
+         */
         dropevent(e) {
             this.hover = false;
             let droppedFiles = e.dataTransfer.files;
@@ -129,12 +156,15 @@ export default {
                 this.upload(file);
             });
         },
+        /**
+         * uploads a single file 
+         */
         async upload(file) {
             let formdata = new FormData();
             formdata.append("file", file.file);
             formdata.append("date", file.date);
 
-            //let self = this;
+            //let self = this; // little "hack" to have access to "this" inside th axioscallback
             let x = await Axios.post("upload", formdata, {
                 onUploadProgress: function (progressEvent) {
                     var percentCompleted = Math.round(
@@ -148,6 +178,11 @@ export default {
             file.thumbnail = x.data.filepath + x.data.thumbnail;
             file.result = x.data;
         },
+    },
+
+    created(){
+        console.log("created");
+        document.onpaste = this.pasteevent;
     },
     components: {
         Menu,

@@ -4,6 +4,7 @@ body {
     background-repeat: no-repeat !important;
     background-attachment: fixed !important;
     background-position: center !important;
+    background-size: cover !important;
 
     box-shadow: inset 0 0 5em 1em #000 !important;
 }

@@ -52,24 +52,18 @@ a{
     border: 5px solid red;
 }
 
-.static{
-    position: fixed;
+.bigtext{
+    font-size: 2rem;
 }
 
-.albumlist{
-    background-color: rgba(71, 71, 71, 0.774) !important;
-}
+
 </style>>
 
 
 <template>
     <div>
-        <template v-if="albumDialogOpen">
-            <AddToAblumDialog :files="markedFilesArray" ></AddToAblumDialog>
-        </template>
-
-        <Menu v-if="markedFiles < 1"  :album=false></Menu>
-        <MenuSelected v-if="markedFiles > 0" :album=false ></MenuSelected>
+        <Menu v-if="markedFiles < 1" :key="markedFiles"></Menu>
+        <MenuSelected v-if="markedFiles > 0" :album=true :key="markedFiles"></MenuSelected>
 
         <v-dialog v-model="dialogopen" v-if="dialog">
             <v-card class="whitebg">
@@ -201,95 +195,82 @@ a{
        
         <v-main>
             <v-row>
-                <v-col cols="2" class="">
-                    <v-list class="transparent">
-                        <v-list-item-group class="static">
-                            <v-list-item
-                                
-                                v-for="(album,index) in albums" :key="index"
-                                class="albumlist"
-                                @click="$router.push({name:'album',params:{'key':album.albumkey}})"
-                            >  
-                                <v-list-item-title>
-                                    {{album.albumname}}
-                                </v-list-item-title>
-
-                            </v-list-item>
-                        </v-list-item-group>
-                    </v-list>
+                <v-col cols="8" offset="2">
+                    <v-text-field
+                        ref="title"
+                        :disabled="!titleEdit"
+                        class="bigtext"
+                        color="white"
+                        label="Album name"
+                        v-model="albumname"
+                    ></v-text-field>
                 </v-col>
-                <v-col cols="10" class="">
-                    <masonry-infinite-grid
-                        class="container"
-                        v-bind:gap="5">
+                <v-col cols="2" class="bigtext">
+                    <a v-if="titleEdit" @click.stop="titleEdit=false;saveTitle()">
+                        <v-icon large>mdi-content-save</v-icon>
+                    </a>
+                    <a v-if="titleEdit" @click.stop="titleEdit=false;resetTitle()">
+                        <v-icon large>mdi-close</v-icon>
+                    </a>
+                    <a v-if="!titleEdit" @click.stop="titleEdit=true">
+                        <v-icon large>mdi-pencil</v-icon>
+                    </a>
+                </v-col>
+                <masonry-infinite-grid
+                    class="container"
+                    v-bind:gap="5">
 
-                        <div
-                            class="item"
-                            v-for="(item,index) in files"
-                            :key="index"
+                    <div
+                        class="item"
+                        v-for="(item,index) in files"
+                        :key="index"
+                    >
+                        <v-card    
+                            @click="
+                                dialog = item;
+                                dialogopen = true;
+                                getTags();
+                            "
+                            class="mx-auto my-12 hoveractivator"
                         >
-                            <v-card    
-                                @click="
-                                    dialog = item;
-                                    dialogopen = true;
-                                    getTags();
-                                "
-                                class="mx-auto my-12 hoveractivator"
-                            >
-                                <v-img 
-                                    v-if="item.filetype!='file'"
-                                    :width="item.thumbnailx"
-                                    :height="item.thumbnaily"
-                                    class="white--text "
-                                    
-                                :class="{'pad':item.marked}"
-                                    gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-                                    contain
-                                    :src="$url + 'files/' + item.filepath + item.thumbnail"
-                                >
-                                    <v-app-bar flat color="rgba(0, 0, 0, 0)" >
-                                        <v-app-bar-nav-icon color="white">
-                                            <v-icon :class="{'onhover':!item.marked}"
-                                                @click.stop="markFile(item)">
-                                                mdi-checkbox-marked-circle
-                                            </v-icon>
-                                        </v-app-bar-nav-icon>
+                            <v-img 
+                                v-if="item.filetype!='file'"
+                                :width="item.thumbnailx"
+                                :height="item.thumbnaily"
+                                class="white--text "
                                 
-                                    </v-app-bar>
+                            :class="{'pad':item.marked}"
+                                gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                                contain
+                                :src="$url + 'files/' + item.filepath + item.thumbnail"
+                            >
+                                <v-app-bar flat color="rgba(0, 0, 0, 0)" >
+                                    <v-app-bar-nav-icon color="white">
+                                        <v-icon :class="{'onhover':!item.marked}"
+                                            @click.stop="markFile(item)">
+                                            mdi-checkbox-marked-circle
+                                        </v-icon>
+                                    </v-app-bar-nav-icon>
+                            
+                                </v-app-bar>
 
-                                </v-img>
+                            </v-img>
 
-                                <v-img
-                                    v-else
-                                    :width="200"
-                                    :height="200"
-                                    class="white--text align-end"
-                                    gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-                                    contain
-                                    src="~@/assets/icon_file.png"
-                                >
-                                    <v-card-title v-text="item.originalfilename"></v-card-title>
-                                    
-                                </v-img>
-                            </v-card>
-                        </div>
-                    </masonry-infinite-grid>      
-                </v-col>
-                
-            </v-row>
-
-            <v-row v-if="!endreached || !loading">
-                <v-skeleton-loader
-                    v-intersect="{
-                        handler: pageEndReached,
-                        options: {
-                            threshold: [0, 0.5, 1.0],
-                        },
-                    }"
-                    width="200"
-                    height="200"
-                    type="card"
-                ></v-skeleton-loader>
+                            <v-img
+                                v-else
+                                :width="200"
+                                :height="200"
+                                class="white--text align-end"
+                                gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                                contain
+                                src="~@/assets/icon_file.png"
+                            >
+                                <v-card-title v-text="item.originalfilename"></v-card-title>
+                                
+                            </v-img>
+                        </v-card>
+                    </div>
+                </masonry-infinite-grid>      
             </v-row>
         </v-main>
     </div>
@@ -301,17 +282,17 @@ import vuePlayer from "@algoz098/vue-player";
 
 import Menu from "./menu.vue";
 import MenuSelected from "./menuselected.vue"; // menu if items are selected (delete, add album etc)
-import AddToAblumDialog from "../components/addToAlbumpopup.vue";
 import eventHub from "../components/eventhub";
 import { MasonryInfiniteGrid } from "@egjs/vue-infinitegrid";
 import axios from 'axios';
 
 export default {
     data: () => ({
-
-        albumDialogOpen:false,
-
-        albums:[],
+        
+        albumKey:"",
+        albumname:"",
+        _albumname:"", // saved albumname in case of "reset"
+        titleEdit:false,
 
         search: "",
 
@@ -333,6 +314,60 @@ export default {
         tags: ["testtag", "tag"],
     }),
     methods: {
+        async deleteAlbum(){
+            try {
+                await axios.delete(`albums/${this.albumKey}/`)
+                this.$router.replace({
+                        name: "index"
+                    });
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        async removeFiles(){
+            try {
+                let fileKeys = [];
+                for (let i = 0; i < this.files.length; i++) {
+                    if(this.files[i].marked)
+                        fileKeys.push(this.files[i].filename);
+                }
+                this.loading = true;
+                await axios.post(`albums/${this.albumKey}/files`,{
+                    files:fileKeys
+                })
+
+                for (let i = this.files.length-1; i >= 0; i--) {
+                    console.log(i);
+                    if(this.files[i].marked)
+                        this.files.splice(i,1);
+                }
+
+                this.markedFiles = 0;
+                this.markedFilesArray = [];
+
+            } catch (error) {   
+                console.log(error);
+            }finally{
+                this.loading = false;
+            }
+        },
+        /**
+         * resets the albumtitle to original
+         */
+        resetTitle(){
+            this.albumname = this._albumname;
+        },
+        async saveTitle(){
+            try {
+                await axios.put(`albums/${this.albumKey}/name`,{
+                    title:this.albumname
+                });
+                this._albumname = this.albumname;
+                console.log("saved new name")
+            } catch (error) {
+                console.log(error);
+            }
+        },
         markFile(file){
             file.marked = !file.marked;
     
@@ -349,45 +384,6 @@ export default {
                 this.files[i].marked = false;
             }
             this.markedFiles = 0;
-        },
-        /**
-         * page end trigger, tries to load the next page
-         */
-        pageEndReached(/*entries, observer*/) {
-            console.log(`pageEndReached`);
-            this.loadNextPage();
-        },
-        /**
-         * loads the next page
-         */
-        async loadNextPage() {
-            if (this.loading || this.endreached) return;
-
-            this.page += 1;
-
-            try {
-                this.loading = true;
-                console.log(`loading new page: ${this.page}`);
-                let x = await Axios.get(
-                    `search/${this.page}?search=${this.search}`
-                );
-
-                if (x.data.length == 0) {
-                    console.log(`no images left after page: ${this.page}`);
-                    this.endreached = true;
-                    return;
-                }
-
-                for (let i = 0; i < x.data.length; i++) {
-                    const element = x.data[i];
-                    element.marked = false;
-                    this.files.push(element);
-                }
-
-                this.loading = false;
-            } catch (error) {
-                console.log(error);
-            }
         },
         /**
          * marks currently selected file private or public
@@ -465,22 +461,28 @@ export default {
          */
         async getFiles() {
             this.loading = true;
-            this.endreached = true;
-            this.page = 0;
             try{
                 let x = await Axios.get(
-                    `search/${this.page}?search=${this.search}`
+                    `albums/${this.albumKey}`
                 );
                 this.loading = false;
                 this.endreached = false;
 
                 this.files = [];
 
-                for (let i = 0; i < x.data.length; i++) {
-                    const element = x.data[i];
+                for (let i = 0; i < x.data.files.length; i++) {
+                    const element = x.data.files[i];
                     element.marked = false;
                     this.files.push(element);
                 }
+                this.albumname = x.data.albumname;
+                this._albumname = x.data.albumname;
+
+                // set focus if titleEdit was set to true via url "?edit=asdas"
+                if(this.titleEdit){
+                    this.$refs.title.focus();
+                }
+
 
             }catch(error){
                 if(error.response.status == 403){
@@ -491,17 +493,6 @@ export default {
             }
             console.log("getFiles done");
         },
-        /**
-         * gets all existing albums
-         */
-        async getAlbums(){
-            try {
-                let res = await axios.get("/albums/");
-                this.albums = res.data;
-            } catch (error) {
-                console.log(error);
-            }
-        }
     },
 
     watch: {
@@ -514,12 +505,7 @@ export default {
                 this.fullimageloaded = false;
             }
         },
-        /**
-         * checks if the dialog closed since it does not emit an event
-         */
-        albumDialogOpen: function (newValue) {
-            console.log(`albumDialogOpen: ${newValue}`);
-        },
+
     },
     created() {
 
@@ -554,18 +540,32 @@ export default {
         eventHub.$on("addToAlbumClosed", () => {
             this.albumDialogOpen = false;
         });
+
+        eventHub.$on("remove", () => {
+            this.removeFiles();
+        });
+
+        eventHub.$on("deletealbum", () => {
+            this.deleteAlbum();
+        });
     },
     mounted() {
+        this.albumKey = this.$route.params.key;
         this.getFiles();
         this.getAllTags();
-        this.getAlbums();
+
+        
+        if(this.$route.query.edit){
+            console.log("editmode")
+            this.titleEdit=true;
+            
+        }
     },
     components: {
         Menu,
         vuePlayer,
         MasonryInfiniteGrid,
-        MenuSelected,
-        AddToAblumDialog
+        MenuSelected
     },
 };
 </script>
