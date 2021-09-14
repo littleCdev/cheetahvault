@@ -1,35 +1,12 @@
 <style>
-.max100 {
-    width: initial;
-    max-width: 100%;
-    max-height: 80vh;
-}
+
 
 .nopad-bottop {
     padding-bottom: 0;
     padding-top: 0;
 }
 
-.whitebg {
-    background-color: rgba(71, 71, 71, 0.774) !important;
-}
 
-.fade {
-    transition: opacity 0.6s;
-    -webkit-transition: opacity 0.6s;
-}
-.opacity0 {
-    opacity: 0;
-}
-
-.opacity1 {
-    opacity: 1;
-}
-
-.video > video {
-    max-height: 80vh;
-    max-width: 100%;
-}
 
 a{
     /* i don't like the underline for links */
@@ -71,131 +48,10 @@ a{
         <Menu v-if="markedFiles < 1"  :album=false></Menu>
         <MenuSelected v-if="markedFiles > 0" :album=false ></MenuSelected>
 
-        <v-dialog v-model="dialogopen" v-if="dialog">
-            <v-card class="whitebg">
-                <v-card-title class="justify-center">
-                    <h4 class="white--text">{{ dialog.originalfilename }}</h4>
-                </v-card-title>
-                <v-card-text>
-                    <v-row class="">
-                        <v-col cols="9" class="text-center nopad-bottop">
-
-                            <!--- images/photos --->
-                            <img
-                                v-if="dialog.filetype == 'image'"
-                                class="max100 fade"
-                                :src="
-                                    $url +
-                                    'files/' +
-                                    dialog.filepath +
-                                    dialog.filename
-                                "
-                                width="dialog.imagex"
-                                height="dialog.imagey"
-                                @load="fullimageloaded = true"
-                                :class="{
-                                    opacity0: !fullimageloaded,
-                                    opacity1: fullimageloaded,
-                                }"
-                            />
-
-                            <!--- videos --->
-                            <vue-player
-                                v-if="dialog.filetype == 'video'"
-                                class="video"
-                                :src="
-                                    $url +
-                                    'files/' +
-                                    dialog.filepath +
-                                    dialog.filename
-                                "
-                                :poster="
-                                    $url +
-                                    'files/' +
-                                    dialog.filepath +
-                                    dialog.videopreview
-                                "
-                                :autoplay="true"
-                            ></vue-player>
-
-                            <!--- files, just show download icon --->
-                            <a :href="$url+'files/'+dialog.filepath+dialog.filename+'/'+dialog.originalfilename" 
-                                :download="dialog.originalfilename"
-                                 v-if="dialog.filetype == 'file'">
-                                <h2 class="white--text">
-                                    Download
-                                    <v-icon>mdi-download</v-icon>
-                                    <br>
-                                    {{dialog.originalfilename}}
-                                    <br>
-                                    {{dialog.filesizestr}}
-                                </h2>
-                            </a>
-
-                        </v-col>
-
-                        <v-col cols="3" class="white--text">
-                            <v-row class="" v-if="this.editmode">
-                                <v-col cols="12"
-                                    ><p>Date: {{ dialog.filedate }}</p></v-col
-                                >
-                                <v-col cols="12">
-                                    <v-checkbox
-                                        class="white--text"
-                                        v-model="dialog.showinindex"
-                                        label="Public"
-                                        @change="makePrivate"
-                                    ></v-checkbox>
-                                </v-col>
-                                <v-col cols="12">
-                                    <v-combobox
-                                        v-model="values"
-                                        :items="tags"
-                                        multiple
-                                        persistent-hint
-                                        small-chips
-                                        deletable-chips
-                                        @change="saveTags"
-                                    >
-                                    </v-combobox>
-                                </v-col>
-                            </v-row>
-
-                            <v-row v-else>
-                                <v-col cols="12"
-                                    ><p>Date: {{ dialog.filedate }}</p></v-col
-                                >
-                                <v-col cols="12"
-                                    ><p :title="dialog.filesize">Size: {{ dialog.filesizestr }}</p></v-col
-                                >
-                                <v-col cols="12">
-                                    Public
-                                    <v-icon
-                                        v-if="dialog.showinindex"
-                                        class="white--text"
-                                        >mdi-check</v-icon
-                                    >
-                                    <v-icon v-else class="white--text"
-                                        >mdi-block-helper</v-icon
-                                    >
-                                </v-col>
-
-                                <v-col cols="12">
-                                    <v-chip-group>
-                                        <v-chip
-                                            v-for="(tag, index) in values"
-                                            :key="index"
-                                        >
-                                            {{ tag }}
-                                        </v-chip>
-                                    </v-chip-group>
-                                </v-col>
-                            </v-row>
-                        </v-col>
-                    </v-row>
-                </v-card-text>
-            </v-card>
-        </v-dialog>
+        <light-box
+            :files="files"
+            :index=selectedIndex
+        ></light-box>
        
        
        
@@ -234,7 +90,7 @@ a{
                             :key="index"
                         >
                             <v-card    
-                                @click="openOrMark(item)"
+                                @click="openOrMark(item,index)"
                                 class="mx-auto my-12 hoveractivator"
                             >
                                 <v-img 
@@ -298,7 +154,6 @@ a{
 
 <script>
 import Axios from "axios";
-import vuePlayer from "@algoz098/vue-player";
 
 import Menu from "./menu.vue";
 import MenuSelected from "./menuselected.vue"; // menu if items are selected (delete, add album etc)
@@ -309,31 +164,64 @@ import axios from 'axios';
 import axiosError  from "../components/checkAjaxError";
 import trylogin from "../components/checkLogin";
 
+import lightBox from "../components/lightBox.vue";
 export default {
+    components: {
+        Menu,
+        MasonryInfiniteGrid,
+        MenuSelected,
+        AddToAblumDialog,
+        lightBox
+    },
     data: () => ({
-
+        /**
+         * selected fileindex for lightbox
+         * (index of this.files)
+         */
+        selectedIndex:-1,
+        /**
+         * dialog for adding files to an album
+         */
         albumDialogOpen:false,
 
+        /**
+         * albums for sidemenu
+         */
         albums:[],
 
+        /**
+         * searchvalue emitted from menu
+         */
         search: "",
 
-        editmode: false,
-
+        /**
+         * count of marked files
+         * will only be modified if markFile(),openOrMark(),clearMarkedFiles() is used
+         */
         markedFiles:0,
-        markedFilesArray:[], // will only be filled when "openAlbumDialog" is opend
+        /**
+         * will only be filled when "openAlbumDialog" is opend
+         */
+        markedFilesArray:[], 
 
+        /**
+         * loading indicator
+         */
         loading: false,
-        fullimageloaded: false,
 
-        dialogopen: false,
-        dialog: null,
+        /**
+         * page for scrolling
+         */
         page: 0,
+        /**
+         * end reached indicator 
+         */
         endreached: false,
+        /**
+         * array where all files are stored in 
+         */
         files: [],
 
-        values: [],
-        tags: ["testtag", "tag"],
 
         loginChecked:false, // prevent the pageEndReachedEvent from firing before login was checked in mounted();
     }),
@@ -342,17 +230,17 @@ export default {
          * opens or marks file
          * if there is more than one file selected the popup wont open and the file will be selected
          */
-        openOrMark(file){
+        openOrMark(file,index){
             if(this.markedFiles > 0){
                 this.markFile(file);
                 return;
             }
             // open dialog
-            
-            this.dialog = file;
-            this.dialogopen = true;
-            this.getTags();
+            this.selectedIndex = index;
         },
+        /**
+         * adds an file to selected ones
+         */
         markFile(file){
             file.marked = !file.marked;
     
@@ -414,81 +302,6 @@ export default {
             }
         },
         /**
-         * marks currently selected file private or public
-         */
-        async makePrivate() {
-            try {
-                let data = null;
-                if (this.dialog.showinindex) {
-                    data = await Axios.delete(
-                        `files/${this.dialog.filename}/hidden/`
-                    );
-                } else {
-                    data = await Axios.put(
-                        `files/${this.dialog.filename}/hidden/`
-                    );
-                }
-                console.log(data);
-            } catch (e) {
-                console.log(e);
-                axiosError(e);
-            }
-        },
-        /**
-         * gets tags for currently selected file
-         */
-        async getTags() {
-            console.log("getting tags");
-            this.values = [];
-            try {
-                let data = await Axios.get(`files/${this.dialog.id}/tags/`);
-                this.values = data.data;
-            } catch (e) {
-                console.log(e);
-                axiosError(e);
-            }
-        },
-        /**
-         * gets all existing tags -> this.tags
-         */
-        async getAllTags() {
-            try {
-                let data = await Axios.get("tags/");
-                this.tags = data.data;
-            } catch (e) {
-                console.log(e);
-                axiosError(e);
-            }
-        },
-        /**
-         * saves  tags for the current open file
-         */
-        async saveTags() {
-            try {
-                await Axios.put(`files/${this.dialog.id}/tags/`, {
-                    tags: this.values,
-                });
-            } catch (e) {
-                console.log(e);
-                axiosError(e);
-            }
-            this.getAllTags();
-        },
-        /**
-         * filters tags for the tag autocomplete field so already assigned tags aren't showing up
-         */
-        tagfilter(item, query, imtemText) {
-            console.log(item);
-            console.log(query);
-            console.log(imtemText);
-
-            if (this.values.includes(imtemText)) return 0;
-
-            if (imtemText.startsWith(query)) return 1;
-
-            return 0;
-        },
-        /**
          * gets files using this.page and this.search
          */
         async getFiles() {
@@ -536,15 +349,6 @@ export default {
     },
 
     watch: {
-        /**
-         * checks if the dialog closed since it does not emit an event
-         */
-        dialogopen: function (newValue) {
-            if (!newValue) {
-                this.dialog = null;
-                this.fullimageloaded = false;
-            }
-        },
         /**
          * checks if the dialog closed since it does not emit an event
          */
@@ -599,16 +403,8 @@ export default {
         
         this.loginChecked = true;
         this.getFiles();
-        this.getAllTags();
         this.getAlbums();
 
-    },
-    components: {
-        Menu,
-        vuePlayer,
-        MasonryInfiniteGrid,
-        MenuSelected,
-        AddToAblumDialog
     },
 };
 </script>
