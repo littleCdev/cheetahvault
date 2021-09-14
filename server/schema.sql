@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `albums`(
 );
 
 CREATE TABLE IF NOT EXISTS `albummap`(
-    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
     fileid              INTEGER NOT NULL,
-    albumid             INTEGER NOT NULL
+    albumid             INTEGER NOT NULL,
+    PRIMARY KEY(albumid,fileid)
 );

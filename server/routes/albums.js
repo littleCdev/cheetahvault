@@ -67,14 +67,16 @@ routes.put("/",asyncHandler(async(req,res,next)=>{
     
     let albumId = await Albums.keyToId(req.params.KEY);
 
-    for (let i = 0; i < req.body.files.length; i++) {
-        const fileKey = req.body.files[i];
+    // fileIds = [{id,key},{id,key}...]
+    let fileIds = await Files.keysToIds(req.body.files);
+    Log.debug(fileIds)
+    // fileIdsOnly = [id,id,id,id,...]
+    let fileIdsOnly = [];
+    for (let i = 0; i < fileIds.length; i++) 
+        fileIdsOnly.push(fileIds[i].id);
 
-        let fileId = await Files.keyToId(fileKey);
+    await Albums.addFiles(albumId,fileIdsOnly);
 
-        await Albums.addFile(albumId,fileId)
-    }
-    
     res.send()
 }))
 /**

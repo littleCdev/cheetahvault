@@ -79,10 +79,28 @@ function all(query,params=[]){
 function get(query,params=[]){
     return db.get(query,params);
 }
+function prepare(query){
+    return db.prepare(query);
+}
+
+async function stmRunAsync(stm,params){
+    return new Promise((resolve,reject)=>{
+        stm.run(params,(err)=>{
+            if(err){
+                reject(err);    
+            }else{
+                resolve();
+            }
+        });
+    })
+}
+
 
 module.exports={
     all,
     run,
+    prepare,
+    stmRunAsync,
     init,
     createSchema
 }

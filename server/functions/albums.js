@@ -47,17 +47,48 @@ async function craeteNew(title){
  * @param {int} albumid 
  * @param {int} fileid 
  */
-async function addFile(albumid,fileid){
+ async function addFile(albumid,fileid){
     let res = await db.all("select id from albums where id=?",[albumid]);
     if(res.length == 0)
         throw "album does not exist";
     
-    await db.run("insert into albummap (fileid,albumid) values (?,?)",[
+    await db.run("insert or ignore into albummap (fileid,albumid) values (?,?)",[
         fileid,
         albumid
     ]);
     Log.info(`added ${fileid} to ${albumid}`);
 }
+
+
+
+/**
+ * adds an given file to an album
+ * @param {int} albumid 
+ * @param {int} fileid 
+ */
+ async function addFiles(albumid,files=[]){
+    files.forEach(element => {
+        if(typeof element !== "number")
+            throw `invalid type as parameter, only number are allowed for fileids, ${typeof element} -> ${element}`
+    });
+
+    let ids = files.join(",");
+    let res = await db.all(`select count(id) as cnt from files where id in(${ids})`)
+    if(res[0].cnt != files.length){
+        throw `at least one file-id does not exist (${res[0].cnt} != ${files.length})`;
+    }
+
+    let stm = db.prepare("insert or ignore into albummap (fileid,albumid) values (?,?)");
+
+    for (let i = 0; i < files.length; i++) {
+        Log.info(`trying to add ${files[i]} to ${albumid}`);
+        let x = await db.stmRunAsync(stm,[files[i],albumid])
+        Log.info(`added ${files[i]} to ${albumid}`);
+    }
+
+    stm.finalize();
+}
+
 /**
  * removes a given file from an album
  * @param {int} albumid 
@@ -124,13 +155,15 @@ async function getInfo(id){
 }
 
 async function setName(id,name){
-    let res = db.run("update albums set albumname=? where id=?",[
+    let res = await db.run("update albums set albumname=? where id=?",[
         name,
         id
     ])
 
-    if(res.changes != 1)
+    if(res.changes != 1){
+        Log.critical(res);
         throw `updated ${res.changes} rows but expected 1 for albumid:${id}`
+    }
 }
 
 /**
@@ -155,5 +188,6 @@ module.exports = {
     getFiles,
     getInfo,
     setName,
-    deleteAlbum
+    deleteAlbum,
+    addFiles
 }

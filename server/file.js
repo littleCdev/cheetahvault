@@ -245,10 +245,10 @@ let getlatest = async (search="",page=0,n=20)=>{
         ids = ids.substr(0,ids.length-1);
         Log.info(`searching for: ${search} ids: ${ids}`)
     
-        images = await db.all(`select f.* from  files f join tagmap tm on f.id=tm.imageid where tm.tagid in (${ids}) group by f.id limit ? offset ?;`,[n,n*page])
+        images = await db.all(`select f.* from  files f join tagmap tm on f.id=tm.imageid where tm.tagid in (${ids}) group by f.id order by f.sortdate DESC limit ? offset ?;`,[n,n*page])
 
     }else{
-        images = await db.all("select * from files where showinindex=1 limit ? offset ?",[n,n*page]);
+        images = await db.all("select * from files where showinindex=1 order by sortdate DESC limit ? offset ?",[n,n*page]);
     }
 
     return images;
@@ -284,7 +284,7 @@ let getFilePath = async(givenpath,filename)=>{
  * @param {string} key 
  * @returns {int} id
  */
-async function keyToId(key){
+ async function keyToId(key){
     let res = await db.all("select id from files where filename=?",[key]);
 
     if(res.length == 0)
@@ -292,6 +292,20 @@ async function keyToId(key){
 
     return res[0].id;
 }
+/**
+ * key is equal to filename
+ * @param {Array|String} keys 
+ * @returns {Array} id
+ */
+ async function keysToIds(keys=[]){
+    let res = await db.all(`select id,filename from files where filename in (${ keys.map(() => "?").join(",") })`,keys);
+
+    if(res.length != keys.length)
+        throw `at least one filekey does not exist: ${res.length} != ${keys.length}`;
+
+    return res;
+}
+
 
 module.exports={
     getlatest,
@@ -301,5 +315,6 @@ module.exports={
     getTags,
     getAllTags,
     getFilePath,
-    keyToId
+    keyToId,
+    keysToIds
 }
