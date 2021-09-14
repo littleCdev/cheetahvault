@@ -51,6 +51,7 @@ import Axios from "axios";
 import Menu from "./menu.vue";
 
 import trylogin from "../components/checkLogin";
+import axiosError  from "../components/checkAjaxError";
 
 export default {
     data: () => ({
@@ -81,6 +82,7 @@ export default {
                 }             
             } catch (error) {
                 console.log(error);
+                axiosError(error);
             }
         }
     },
@@ -93,7 +95,15 @@ export default {
 
     },
     async created() {
-        let action = await trylogin();
+        let action = "";
+        try {
+            action = await trylogin();
+            
+        } catch (error) {
+            console.log(error);
+            axiosError(error);
+            return;
+        }
         switch(action){
             case "user":// lol redirect back
                 this.$router.replace({

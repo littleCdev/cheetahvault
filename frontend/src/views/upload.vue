@@ -102,6 +102,7 @@
 
 <script>
 import Axios from "axios";
+import axiosError  from "../components/checkAjaxError";
 import Menu from "./menu.vue";
 export default {
     data: () => ({
@@ -160,23 +161,28 @@ export default {
          * uploads a single file 
          */
         async upload(file) {
-            let formdata = new FormData();
-            formdata.append("file", file.file);
-            formdata.append("date", file.date);
+            try{
 
-            //let self = this; // little "hack" to have access to "this" inside th axioscallback
-            let x = await Axios.post("upload", formdata, {
-                onUploadProgress: function (progressEvent) {
-                    var percentCompleted = Math.round(
-                        (progressEvent.loaded * 100) / progressEvent.total
-                    );
-                    console.log(percentCompleted);
-                    file.progress = percentCompleted;
-                },
-            });
-            file.progress = 100;
-            file.thumbnail = x.data.filepath + x.data.thumbnail;
-            file.result = x.data;
+                let formdata = new FormData();
+                formdata.append("file", file.file);
+                formdata.append("date", file.date);
+
+                //let self = this; // little "hack" to have access to "this" inside th axioscallback
+                let x = await Axios.post("upload", formdata, {
+                    onUploadProgress: function (progressEvent) {
+                        var percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total
+                        );
+                        console.log(percentCompleted);
+                        file.progress = percentCompleted;
+                    },
+                });
+                file.progress = 100;
+                file.thumbnail = x.data.filepath + x.data.thumbnail;
+                file.result = x.data;
+            }catch(error){
+                axiosError(error);
+            }
         },
     },
 

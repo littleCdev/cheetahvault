@@ -5,6 +5,9 @@
 <template>
     <v-dialog v-model="open">
         <v-card>
+            <v-card-title>
+                Add {{files.length}} files to 
+            </v-card-title>
             <v-card-text>
                 <v-row >
                     <v-col cols="12">
@@ -85,6 +88,9 @@ export default {
                     files:fileKeys
                 });
                 console.log(res.data);
+                this.open = false;
+                // clear selected files after the are added to the album
+                eventhub.$emit("clear");
             }catch(e){
                 console.log(e);
             }
