@@ -36,6 +36,20 @@ routes.put("/:ID/hidden",asyncHandler(async(req,res,next)=>{
     res.send();
 }))
 
+
+/**
+ * deletes all files given in files(array)
+ */
+ routes.post("/deletemany",asyncHandler(async(req,res,next)=>{
+    let idsAndKeys = await cheetahFile.keysToIds(req.body.files||[]);
+
+    for (let i = 0; i < idsAndKeys.length; i++)
+        await cheetahFile.deleteFile(idsAndKeys[i].id);
+
+    res.send("ok");
+}));
+
+
 /**
  * marks a given ID as public
  */

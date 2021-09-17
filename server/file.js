@@ -1,4 +1,6 @@
 const fs = require("fs").promises;
+const Path = require('path');
+
 const getExif = require('exif-async');
 
 const Config = require("./config.json");
@@ -306,8 +308,61 @@ let getFilePath = async(givenpath,filename)=>{
     return res;
 }
 
+/**
+ * Deletes a given fileid with all tags, albums and thumbnails
+ * @param {Number} id 
+ */
+async function deleteFile(id){
+    Log.info(`deleteing file with id: ${id}`);
+
+    let file = await db.single("select * from files where id=?",[id])
+
+    if(file == null){
+        Log.critical(`tried to delete file with id ${id} but it does not exist`);
+        throw `file ${id} does not exist`;
+    }
+
+    let res = await db.run("delete from albummap where fileid=?",[id])
+    Log.debug(`removed file ${id} from ${res.changes} albums`);
+
+    res = await db.run("delete from tagmap where imageid=?",[id])
+    Log.debug(`removed ${res.changes} tags from file ${id}`);
+
+    if(file.thumbnail.length > 0){
+        Log.debug(`deleting thumbmail for file ${id}`)
+        await fs.unlink(Path.join(Config.uploadpath,file.filepath,file.thumbnail));
+        Log.debug(`deleted thumbmail for file ${id}`)
+    }else{
+        Log.debug(`file ${id} has no thumbnail`)
+    }
+    
+
+    if(file.videopreview.length > 0){
+        Log.debug(`deleting videopreview for file ${id}`)
+        await fs.unlink(Path.join(Config.uploadpath,file.filepath,file.videopreview));
+        Log.debug(`deleted videopreview for file ${id}`)
+    }else{
+        Log.debug(`file ${id} has no videopreview`)
+    }
+
+    if(file.filename.length > 0){
+        Log.debug(`deleting file for file ${id}`)
+        await fs.unlink(Path.join(Config.uploadpath,file.filepath,file.filename));
+        Log.debug(`deleted file for file ${id}`)
+    }else{
+        Log.debug(`file ${id} has no file`)
+    }
+
+    res = await db.run("delete from files where id=?",[id]);
+    if(res.changes != 1){
+        Log.critical(`tried to delete file ${id}  from database but only deleted ${res.changes} rows`)
+        throw `failed to delete file`;
+    }
+    Log.info(`deleted file ${id}`)
+}
 
 module.exports={
+    deleteFile,
     getlatest,
     newFile,
     makePrivate,
