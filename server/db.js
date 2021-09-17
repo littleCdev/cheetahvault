@@ -76,6 +76,27 @@ function all(query,params=[]){
     return db.all(query,params);
 }
 
+/**
+ * get a single row from query (first)
+ * @param {String} query 
+ * @param {Array} params 
+ * @returns {object}
+ */
+function single(query,params=[]){
+    return new Promise(async(resolve,reject)=>{
+        try{
+            let x = await db.all(query,params);
+            if(x.length > 0){
+                resolve(x[0])
+            }else{
+                resolve(null);
+            }
+        }catch(e){
+            reject(e);
+        }
+    })    
+}
+
 function get(query,params=[]){
     return db.get(query,params);
 }
@@ -98,6 +119,7 @@ async function stmRunAsync(stm,params){
 
 module.exports={
     all,
+    single,
     run,
     prepare,
     stmRunAsync,
