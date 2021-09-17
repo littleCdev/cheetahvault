@@ -227,6 +227,41 @@ export default {
     }),
     methods: {
         /**
+         * removes all files with "marked" attribute from array
+         */
+        removeMarkedFiles(){
+            for (let i = this.files.length-1; i >= 0; i--) {
+                console.log(i);
+                if(this.files[i].marked)
+                    this.files.splice(i,1);
+            }
+            this.clearMarkedFiles();
+        },
+        /**
+         * deletes all marked files from server
+         */
+        async deleteMarkedFiles(){
+            let fileKeys = [];
+            for (let i = 0; i < this.files.length; i++) {
+                if(this.files[i].marked)
+                    fileKeys.push(this.files[i].filename);
+            }
+
+            try {
+                this.loading = true;
+                await axios.post("files/deletemany",{
+                    files:fileKeys
+                });
+                this.removeMarkedFiles();
+            } catch (error) {
+                console.log(error);
+                axiosError(error);
+            }finally{
+                this.loading = false;
+            }
+
+        },
+        /**
          * opens or marks file
          * if there is more than one file selected the popup wont open and the file will be selected
          */
@@ -372,8 +407,14 @@ export default {
         });
 
 
+        // clear event from "menuselected"
         eventHub.$on("clear", () => {
             this.clearMarkedFiles();
+        });
+
+        // delete event from "menuselected"
+        eventHub.$on("delete", () => {
+            this.deleteMarkedFiles();
         });
 
         eventHub.$on("album", () => {

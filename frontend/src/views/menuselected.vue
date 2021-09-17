@@ -63,7 +63,7 @@ a {
             <v-toolbar-title class="action-icon">
                 <v-tooltip bottom>
                     <template v-slot:activator="{on,attr}">
-                        <a href="#delete" @click.stop="emitAction('delete')">
+                        <a @click.stop="emitAction('delete')">
                             <v-icon class="white--text"
                                 v-bind="attr"
                                 v-on="on"
