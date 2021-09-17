@@ -109,7 +109,26 @@
                                     >
                                 </v-col>
 
-                                <v-col cols="12">
+
+                                <v-col cols="12"
+                                    v-if="editmode">
+                                    Tags <v-icon @click="editmode=false">mdi-window-close</v-icon>
+                                    <v-combobox
+                                        v-model="tags"
+                                        :items="allTags"
+                                        multiple
+                                        persistent-hint
+                                        small-chips
+                                        deletable-chips
+                                        @change="saveTags"
+                                    >
+                                    </v-combobox>
+                                </v-col>
+
+
+                                <v-col cols="12"
+                                    v-else>
+                                    Tags <v-icon @click="editmode=true">mdi-pencil-outline</v-icon>
                                     <v-chip-group>
                                         <v-chip
                                             v-for="(tag, index) in tags"
@@ -163,6 +182,10 @@ export default {
         }
     },
     data: () => ({
+        /**
+         * true-> tags are editable
+         */
+        editmode:false,
         /**
          * volume for the videoplayer, is set to 0 if dialog is closed
          */
