@@ -62,3 +62,12 @@ CREATE TABLE IF NOT EXISTS `albummap`(
     albumid             INTEGER NOT NULL,
     PRIMARY KEY(albumid,fileid)
 );
+
+CREATE TABLE IF NOT EXISTS `shares`(
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    targetid            INTEGER NOT NULL,
+    sharetype           INTEGER NOT NULL, /* 0->file, 1->album */
+    sharekey            VARCHAR(255) NOT NULL UNIQUE,
+    sharetime           INTEGER NOT NULL DEFAULT 0,
+    sharedate           VARCHAR(255) NOT NULL DEFAULT ''
+);

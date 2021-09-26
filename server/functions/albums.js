@@ -3,7 +3,12 @@ const db = require("../db");
 const Log = require("../log");
 const rndStr = require("../rnd").filename;
 const simpledate = require("../helpers").DatetimeToStr;
+const File = require("../file");
 
+class publicAlbum{
+    name="";
+    files = [];
+}
 
 /**
  * creates a new album with given title
@@ -179,6 +184,52 @@ async function deleteAlbum(id){
     Log.info(`deleted album ${id}`)
 }
 
+
+/**
+ * @description gets albume name and files only to serve for public shared albums
+ * @param {Number} id 
+ * @returns {publicAlbum}
+ */
+async function getPublicAlbum(id){
+    let ret = new publicAlbum();
+    
+    let res = await db.single("select albumname from albums where id=?",[id]);
+
+    ret.name = res.albumname;
+    Log.debug(`albumid: ${id}`)
+    
+    res = await db.all("select files.* from files join albummap on albummap.fileid=files.id where albummap.albumid=?",[id])
+    console.log(res);
+
+    for (let i = 0; i < res.length; i++) {
+        const element = res[i];
+        let tmp = new File.publicFile();
+
+        tmp.filetype = element.filetype;
+        tmp.filedate = element.filedate;
+        tmp.imagex = element.imagex;
+        tmp.imagey = element.imagey;
+        
+        tmp.orignalfilename = element.orignalfilename;
+
+        tmp.filepath = element.filepath;
+        tmp.filename= element.filename;
+        tmp.filesize = element.filesizestr;
+
+        tmp.thumbnail.x = element.thumbnailx;
+        tmp.thumbnail.y = element.thumbnaily;
+        tmp.thumbnail.file = element.thumbnail;
+
+        tmp.videopreview.x = element.videopreviewx;
+        tmp.videopreview.y = element.videopreviewy;
+        tmp.videopreview.file = element.videopreview;
+
+        ret.files.push(tmp);
+    }
+
+    return ret;
+}
+
 module.exports = {
     craeteNew,
     addFile,
@@ -189,5 +240,6 @@ module.exports = {
     getInfo,
     setName,
     deleteAlbum,
-    addFiles
+    addFiles,
+    getPublicAlbum
 }

@@ -51,6 +51,8 @@ app.use("/search/",require("./routes/search"));
 app.use("/files/",require("./routes/files"));
 app.use("/albums/",require("./routes/albums"));
 app.use("/upload/",require("./routes/upload"));
+app.use("/share/",require("./routes/share"));
+app.use("/public/",require("./routes/public"));
 
 /**
  * errorhandler that's called from next(err) inside asyncHandler

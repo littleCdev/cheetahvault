@@ -17,6 +17,30 @@ const sizeOf = promisify(require('image-size'))
 const cheetahimage = require("./functions/imagepreview")
 const cheetahvideo = require("./functions/videopreview")
 
+class thumnailinfo{
+    x=0;
+    y=0;
+    file="";
+}
+
+/**
+ * @description used for shared albums and files, does contain less info
+ */
+class publicFile{
+    filetype="file";
+    filedate="";
+    imagex=0;
+    imagey=0;
+    orignalfilename="";
+
+    filesize = "0";
+    filename="";
+    filepath="";
+
+    thumbnail = new thumnailinfo();
+    videopreview = new thumnailinfo();
+}
+
 class cheetafile {
 
     id=0;
@@ -361,7 +385,51 @@ async function deleteFile(id){
     Log.info(`deleted file ${id}`)
 }
 
+/**
+ * 
+ * @param {object} params.id or params.key 
+ * @returns {publicFile}
+ */
+async function getPublicFile(params={id:undefined,key:undefined}){
+    if(params.id && params.key)
+        throw "only id OR key allowed, not both";
+    if(!params.id && !params.key)
+        throw "no id nor key provided";
+    
+    let isKey = params.id?true:false;
+
+    let query= isKey?  `select * from files where id=?`:`select * from files where key=?`;
+    let queryparams = isKey?  [params.id]:[params.key];
+
+    let element = await db.single(query,queryparams);
+
+    let tmp = new publicFile();
+
+    tmp.filetype = element.filetype;
+    tmp.filedate = element.filedate;
+    tmp.imagex = element.imagex;
+    tmp.imagey = element.imagey;
+    
+    tmp.orignalfilename = element.orignalfilename;
+    
+    tmp.filepath = element.filepath;
+    tmp.filename= element.filename;
+    tmp.filesize = element.filesizestr;
+
+    tmp.thumbnail.x = element.thumbnailx;
+    tmp.thumbnail.y = element.thumbnaily;
+    tmp.thumbnail.file = element.thumbnail;
+
+    tmp.videopreview.x = element.videopreviewx;
+    tmp.videopreview.y = element.videopreviewy;
+    tmp.videopreview.file = element.videopreview;
+
+
+    return tmp;
+}
+
 module.exports={
+    publicFile,
     deleteFile,
     getlatest,
     newFile,
@@ -371,5 +439,6 @@ module.exports={
     getAllTags,
     getFilePath,
     keyToId,
-    keysToIds
+    keysToIds,
+    getPublicFile
 }
