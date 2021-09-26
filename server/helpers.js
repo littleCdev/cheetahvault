@@ -4,9 +4,14 @@
  * @returns {string} timestamp formatted as YYYY-MM-DD HH:mm:ss
  */
 function DatetimeToStr(orignaldate){
+  let filedate;
+  if(orignaldate === undefined){
+    filedate = new Date();
+  }else{
     orignaldate-=0;
-    let filedate = new Date(orignaldate);
-
+    filedate = new Date(orignaldate);
+  }
+ 
     console.log(filedate);
 
     let filedatestr = filedate.getFullYear()

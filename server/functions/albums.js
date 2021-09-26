@@ -3,7 +3,12 @@ const db = require("../db");
 const Log = require("../log");
 const rndStr = require("../rnd").filename;
 const simpledate = require("../helpers").DatetimeToStr;
+const File = require("../file");
 
+class publicAlbum{
+    name="";
+    files = [];
+}
 
 /**
  * creates a new album with given title
@@ -47,17 +52,48 @@ async function craeteNew(title){
  * @param {int} albumid 
  * @param {int} fileid 
  */
-async function addFile(albumid,fileid){
+ async function addFile(albumid,fileid){
     let res = await db.all("select id from albums where id=?",[albumid]);
     if(res.length == 0)
         throw "album does not exist";
     
-    await db.run("insert into albummap (fileid,albumid) values (?,?)",[
+    await db.run("insert or ignore into albummap (fileid,albumid) values (?,?)",[
         fileid,
         albumid
     ]);
     Log.info(`added ${fileid} to ${albumid}`);
 }
+
+
+
+/**
+ * adds an given file to an album
+ * @param {int} albumid 
+ * @param {int} fileid 
+ */
+ async function addFiles(albumid,files=[]){
+    files.forEach(element => {
+        if(typeof element !== "number")
+            throw `invalid type as parameter, only number are allowed for fileids, ${typeof element} -> ${element}`
+    });
+
+    let ids = files.join(",");
+    let res = await db.all(`select count(id) as cnt from files where id in(${ids})`)
+    if(res[0].cnt != files.length){
+        throw `at least one file-id does not exist (${res[0].cnt} != ${files.length})`;
+    }
+
+    let stm = db.prepare("insert or ignore into albummap (fileid,albumid) values (?,?)");
+
+    for (let i = 0; i < files.length; i++) {
+        Log.info(`trying to add ${files[i]} to ${albumid}`);
+        let x = await db.stmRunAsync(stm,[files[i],albumid])
+        Log.info(`added ${files[i]} to ${albumid}`);
+    }
+
+    stm.finalize();
+}
+
 /**
  * removes a given file from an album
  * @param {int} albumid 
@@ -124,13 +160,15 @@ async function getInfo(id){
 }
 
 async function setName(id,name){
-    let res = db.run("update albums set albumname=? where id=?",[
+    let res = await db.run("update albums set albumname=? where id=?",[
         name,
         id
     ])
 
-    if(res.changes != 1)
+    if(res.changes != 1){
+        Log.critical(res);
         throw `updated ${res.changes} rows but expected 1 for albumid:${id}`
+    }
 }
 
 /**
@@ -146,6 +184,52 @@ async function deleteAlbum(id){
     Log.info(`deleted album ${id}`)
 }
 
+
+/**
+ * @description gets albume name and files only to serve for public shared albums
+ * @param {Number} id 
+ * @returns {publicAlbum}
+ */
+async function getPublicAlbum(id){
+    let ret = new publicAlbum();
+    
+    let res = await db.single("select albumname from albums where id=?",[id]);
+
+    ret.name = res.albumname;
+    Log.debug(`albumid: ${id}`)
+    
+    res = await db.all("select files.* from files join albummap on albummap.fileid=files.id where albummap.albumid=?",[id])
+    console.log(res);
+
+    for (let i = 0; i < res.length; i++) {
+        const element = res[i];
+        let tmp = new File.publicFile();
+
+        tmp.filetype = element.filetype;
+        tmp.filedate = element.filedate;
+        tmp.imagex = element.imagex;
+        tmp.imagey = element.imagey;
+        
+        tmp.orignalfilename = element.orignalfilename;
+
+        tmp.filepath = element.filepath;
+        tmp.filename= element.filename;
+        tmp.filesize = element.filesizestr;
+
+        tmp.thumbnail.x = element.thumbnailx;
+        tmp.thumbnail.y = element.thumbnaily;
+        tmp.thumbnail.file = element.thumbnail;
+
+        tmp.videopreview.x = element.videopreviewx;
+        tmp.videopreview.y = element.videopreviewy;
+        tmp.videopreview.file = element.videopreview;
+
+        ret.files.push(tmp);
+    }
+
+    return ret;
+}
+
 module.exports = {
     craeteNew,
     addFile,
@@ -155,5 +239,7 @@ module.exports = {
     getFiles,
     getInfo,
     setName,
-    deleteAlbum
+    deleteAlbum,
+    addFiles,
+    getPublicAlbum
 }

@@ -1,4 +1,6 @@
 const fs = require("fs").promises;
+const Path = require('path');
+
 const getExif = require('exif-async');
 
 const Config = require("./config.json");
@@ -14,6 +16,30 @@ const sizeOf = promisify(require('image-size'))
 
 const cheetahimage = require("./functions/imagepreview")
 const cheetahvideo = require("./functions/videopreview")
+
+class thumnailinfo{
+    x=0;
+    y=0;
+    file="";
+}
+
+/**
+ * @description used for shared albums and files, does contain less info
+ */
+class publicFile{
+    filetype="file";
+    filedate="";
+    imagex=0;
+    imagey=0;
+    orignalfilename="";
+
+    filesize = "0";
+    filename="";
+    filepath="";
+
+    thumbnail = new thumnailinfo();
+    videopreview = new thumnailinfo();
+}
 
 class cheetafile {
 
@@ -245,10 +271,10 @@ let getlatest = async (search="",page=0,n=20)=>{
         ids = ids.substr(0,ids.length-1);
         Log.info(`searching for: ${search} ids: ${ids}`)
     
-        images = await db.all(`select f.* from  files f join tagmap tm on f.id=tm.imageid where tm.tagid in (${ids}) group by f.id limit ? offset ?;`,[n,n*page])
+        images = await db.all(`select f.* from  files f join tagmap tm on f.id=tm.imageid where tm.tagid in (${ids}) group by f.id order by f.sortdate DESC limit ? offset ?;`,[n,n*page])
 
     }else{
-        images = await db.all("select * from files where showinindex=1 limit ? offset ?",[n,n*page]);
+        images = await db.all("select * from files where showinindex=1 order by sortdate DESC limit ? offset ?",[n,n*page]);
     }
 
     return images;
@@ -284,7 +310,7 @@ let getFilePath = async(givenpath,filename)=>{
  * @param {string} key 
  * @returns {int} id
  */
-async function keyToId(key){
+ async function keyToId(key){
     let res = await db.all("select id from files where filename=?",[key]);
 
     if(res.length == 0)
@@ -292,8 +318,119 @@ async function keyToId(key){
 
     return res[0].id;
 }
+/**
+ * key is equal to filename
+ * @param {Array|String} keys 
+ * @returns {Array} id
+ */
+ async function keysToIds(keys=[]){
+    let res = await db.all(`select id,filename from files where filename in (${ keys.map(() => "?").join(",") })`,keys);
+
+    if(res.length != keys.length)
+        throw `at least one filekey does not exist: ${res.length} != ${keys.length}`;
+
+    return res;
+}
+
+/**
+ * Deletes a given fileid with all tags, albums and thumbnails
+ * @param {Number} id 
+ */
+async function deleteFile(id){
+    Log.info(`deleteing file with id: ${id}`);
+
+    let file = await db.single("select * from files where id=?",[id])
+
+    if(file == null){
+        Log.critical(`tried to delete file with id ${id} but it does not exist`);
+        throw `file ${id} does not exist`;
+    }
+
+    let res = await db.run("delete from albummap where fileid=?",[id])
+    Log.debug(`removed file ${id} from ${res.changes} albums`);
+
+    res = await db.run("delete from tagmap where imageid=?",[id])
+    Log.debug(`removed ${res.changes} tags from file ${id}`);
+
+    if(file.thumbnail.length > 0){
+        Log.debug(`deleting thumbmail for file ${id}`)
+        await fs.unlink(Path.join(Config.uploadpath,file.filepath,file.thumbnail));
+        Log.debug(`deleted thumbmail for file ${id}`)
+    }else{
+        Log.debug(`file ${id} has no thumbnail`)
+    }
+    
+
+    if(file.videopreview.length > 0){
+        Log.debug(`deleting videopreview for file ${id}`)
+        await fs.unlink(Path.join(Config.uploadpath,file.filepath,file.videopreview));
+        Log.debug(`deleted videopreview for file ${id}`)
+    }else{
+        Log.debug(`file ${id} has no videopreview`)
+    }
+
+    if(file.filename.length > 0){
+        Log.debug(`deleting file for file ${id}`)
+        await fs.unlink(Path.join(Config.uploadpath,file.filepath,file.filename));
+        Log.debug(`deleted file for file ${id}`)
+    }else{
+        Log.debug(`file ${id} has no file`)
+    }
+
+    res = await db.run("delete from files where id=?",[id]);
+    if(res.changes != 1){
+        Log.critical(`tried to delete file ${id}  from database but only deleted ${res.changes} rows`)
+        throw `failed to delete file`;
+    }
+    Log.info(`deleted file ${id}`)
+}
+
+/**
+ * 
+ * @param {object} params.id or params.key 
+ * @returns {publicFile}
+ */
+async function getPublicFile(params={id:undefined,key:undefined}){
+    if(params.id && params.key)
+        throw "only id OR key allowed, not both";
+    if(!params.id && !params.key)
+        throw "no id nor key provided";
+    
+    let isKey = params.id?true:false;
+
+    let query= isKey?  `select * from files where id=?`:`select * from files where key=?`;
+    let queryparams = isKey?  [params.id]:[params.key];
+
+    let element = await db.single(query,queryparams);
+
+    let tmp = new publicFile();
+
+    tmp.filetype = element.filetype;
+    tmp.filedate = element.filedate;
+    tmp.imagex = element.imagex;
+    tmp.imagey = element.imagey;
+    
+    tmp.orignalfilename = element.orignalfilename;
+    
+    tmp.filepath = element.filepath;
+    tmp.filename= element.filename;
+    tmp.filesize = element.filesizestr;
+
+    tmp.thumbnail.x = element.thumbnailx;
+    tmp.thumbnail.y = element.thumbnaily;
+    tmp.thumbnail.file = element.thumbnail;
+
+    tmp.videopreview.x = element.videopreviewx;
+    tmp.videopreview.y = element.videopreviewy;
+    tmp.videopreview.file = element.videopreview;
+
+
+    return tmp;
+}
 
 module.exports={
+    publicFile,
+    deleteFile,
     getlatest,
     newFile,
     makePrivate,
@@ -301,5 +438,7 @@ module.exports={
     getTags,
     getAllTags,
     getFilePath,
-    keyToId
+    keyToId,
+    keysToIds,
+    getPublicFile
 }
