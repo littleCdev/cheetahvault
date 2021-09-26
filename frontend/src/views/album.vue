@@ -42,6 +42,8 @@ a{
         <Menu v-if="markedFiles < 1" :key="markedFiles" :album=true></Menu>
         <MenuSelected v-if="markedFiles > 0" :album=true :key="markedFiles"></MenuSelected>
         
+        <share-popup v-if="shareopen" :album="albumKey"></share-popup>
+
         <lightBox
             :files="files"
             :index=selectedIndex
@@ -129,6 +131,7 @@ a{
 <script>
 import Axios from "axios";
 import Menu from "./menu.vue";
+import sharePopup from "../components/sharePopup.vue";
 import MenuSelected from "./menuselected.vue"; // menu if items are selected (delete, add album etc)
 import eventHub from "../components/eventhub";
 import { MasonryInfiniteGrid } from "@egjs/vue-infinitegrid";
@@ -143,9 +146,14 @@ export default {
         Menu,
         MasonryInfiniteGrid,
         MenuSelected,
-        lightBox
+        lightBox,
+        sharePopup
     },
     data: () => ({
+        /**
+         * if share popup is open
+         */
+        shareopen:false,
         /**
          * selected fileindex for lightbox
          * (index of this.files)
@@ -437,9 +445,17 @@ export default {
         eventHub.$on("deletealbum", () => {
             this.deleteAlbum();
         });
+        // share album via popup
+        eventHub.$on("sharealbum", () => {
+            this.shareopen = true;
+        });
         // dlete event from "menuselected"
         eventHub.$on("delete", () => {
             this.deleteMarkedFiles();
+        });
+        // sharepopup closed
+        eventHub.$on("createShareClosed", () => {
+            this.shareopen = false;
         });
     },
     async mounted() {

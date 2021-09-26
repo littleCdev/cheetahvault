@@ -19,6 +19,11 @@ const routes = [
         component: () => import("../views/album.vue"),
     },
     {
+        path: "/s/:key",
+        name: "share",
+        component: () => import("../views/share.vue"),
+    },
+    {
         path: "/login",
         name: "login",
         component: () => import("../views/login.vue"),

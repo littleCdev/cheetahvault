@@ -138,10 +138,11 @@ export default {
          * handles files from the dropevent and adds them to the uploadqueue
          */
         dropevent(e) {
+            let text = e.dataTransfer.getData("text");
+            console.log(`text: ${text}`);
             this.hover = false;
             let droppedFiles = e.dataTransfer.files;
             if (!droppedFiles) return;
-            console.log(droppedFiles);
 
             droppedFiles.forEach((element) => {
                 console.log(new Date(element.lastModified));
