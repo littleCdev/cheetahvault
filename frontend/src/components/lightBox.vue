@@ -241,6 +241,17 @@ export default {
         eventHub.$on("createShareClosed", () => {
             this.shareopen = false;
         });
+        // keyboard navigation
+        document.addEventListener('keydown', (e)=>{
+            if(e.code == "ArrowLeft"){
+                eventHub.$emit("lightboxprev")
+            }else if(e.code == "ArrowRight"){
+                eventHub.$emit("lightboxnext")
+            }
+        });
+    },
+    destroyed() {
+        document.removeEventListener("keydown");
     },
     methods: {
         /**

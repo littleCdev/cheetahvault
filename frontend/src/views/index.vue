@@ -361,7 +361,23 @@ export default {
         eventHub.$on("delete", () => {
             this.deleteMarkedFiles();
         });
-
+        // keyboard navigation
+        eventHub.$on("lightboxprev", () => {
+            if(this.selectedIndex >0)
+                this.selectedIndex--;
+        });
+        // keyboard navigation
+        eventHub.$on("lightboxnext", async () => {
+            console.log(`${this.selectedIndex} ${this.files.length}`)
+            if((this.selectedIndex+1) >= this.files.length){
+                console.log(`requesting more due to keyboard event`)
+                await this.onRequestAppend();
+            }
+            if((this.selectedIndex+1) <= this.files.length)
+                this.selectedIndex++;
+        });
+        
+        
         eventHub.$on("album", () => {
             this.markedFilesArray = [];
             for (let i = 0; i < this.files.length; i++) {
