@@ -59,6 +59,7 @@
                             <vue-player
                                 v-if="file.filetype == 'video'"
                                 class="video"
+                                v-model="videoplaying"
                                 :src="
                                     $url +
                                     'files/' +
@@ -72,7 +73,6 @@
                                     file.videopreview
                                 "
                                 :autoplay="true"
-                                :volume="volume"
                             ></vue-player>
 
                             <a :href="$url+'files/'+file.filepath+file.filename+'/'+file.originalfilename" 
@@ -185,7 +185,10 @@ export default {
         },
         dialogopen:function(newValue){
             if(!newValue){
-                this.volume = 0;
+                console.log("dialog closed, setting stopping video")
+                this.videoplaying = false;
+            }else{
+                this.videoplaying = true;
             }
         }
     },
@@ -199,9 +202,9 @@ export default {
          */
         editmode:false,
         /**
-         * volume for the videoplayer, is set to 0 if dialog is closed
+         * will be set to false if dialog is closed
          */
-        volume:1,
+        videoplaying:true,
 
         /**
          * tags from the file
