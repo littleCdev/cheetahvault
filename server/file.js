@@ -271,9 +271,9 @@ let getlatest = async (search="",page=0,n=20)=>{
         ids = ids.substr(0,ids.length-1);
         Log.info(`searching for: ${search} ids: ${ids}`)
     
-        images = await db.all(`select f.* from  files f left join tagmap tm on f.id=tm.imageid where tm.tagid in (${ids}) or f.originalfilename  like ? group by f.id order by f.sortdate DESC limit ? offset ?;`,[`%${search}%`,n,n*page])
+        images = await db.all(`select f.* from  files f left join tagmap tm on f.id=tm.imageid where tm.tagid in (${ids}) or f.originalfilename  like ? group by f.id order by f.sortdate ASC limit ? offset ?;`,[`%${search}%`,n,n*page])
     }else{
-        images = await db.all("select * from files where showinindex=1 order by sortdate DESC limit ? offset ?",[n,n*page]);
+        images = await db.all("select * from files where showinindex=1 order by sortdate ASC limit ? offset ?",[n,n*page]);
     }
 
     return images;
