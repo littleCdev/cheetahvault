@@ -81,6 +81,7 @@ a{
                 </v-col>
                 <v-col cols="10" class="">
                     <masonry-infinite-grid
+                        @request-append="onRequestAppend"
                         class="container"
                         v-bind:gap="5">
 
@@ -132,21 +133,6 @@ a{
                         </div>
                     </masonry-infinite-grid>      
                 </v-col>
-                
-            </v-row>
-
-            <v-row v-if="!endreached || !loading">
-                <v-skeleton-loader
-                    v-intersect="{
-                        handler: pageEndReached,
-                        options: {
-                            threshold: [0, 0.5, 1.0],
-                        },
-                    }"
-                    width="200"
-                    height="200"
-                    type="card"
-                ></v-skeleton-loader>
             </v-row>
         </v-main>
     </div>
@@ -213,17 +199,14 @@ export default {
          * page for scrolling
          */
         page: 0,
-        /**
-         * end reached indicator 
-         */
-        endreached: false,
+
         /**
          * array where all files are stored in 
          */
         files: [],
 
 
-        loginChecked:false, // prevent the pageEndReachedEvent from firing before login was checked in mounted();
+        loginChecked:false,
     }),
     methods: {
         /**
@@ -293,34 +276,21 @@ export default {
             }
             this.markedFiles = 0;
         },
-        /**
-         * page end trigger, tries to load the next page
-         */
-        pageEndReached(/*entries, observer*/) {
-            if(!this.loginChecked) 
-                return;
 
-            console.log(`pageEndReached`);
-            this.loadNextPage();
-        },
-        /**
-         * loads the next page
-         */
-        async loadNextPage() {
-            if (this.loading || this.endreached) return;
-
-            this.page += 1;
-
+        async onRequestAppend(e) {
+            console.group("loadmore");
+            console.log(e);
+            console.groupEnd("loadmore");
+            
+            if(e) e.wait();
             try {
                 this.loading = true;
-                console.log(`loading new page: ${this.page}`);
                 let x = await Axios.get(
                     `search/${this.page}?search=${this.search}`
                 );
 
                 if (x.data.length == 0) {
                     console.log(`no images left after page: ${this.page}`);
-                    this.endreached = true;
                     return;
                 }
 
@@ -331,44 +301,15 @@ export default {
                 }
 
                 this.loading = false;
+                this.page++;
             } catch (error) {
                 console.log(error);
                 axiosError(error);
+            }finally{
+                if(e) e.ready();
             }
         },
-        /**
-         * gets files using this.page and this.search
-         */
-        async getFiles() {
-            this.loading = true;
-            this.endreached = true;
-            this.page = 0;
-            try{
-                let x = await Axios.get(
-                    `search/${this.page}?search=${this.search}`
-                );
-                this.loading = false;
-                this.endreached = false;
 
-                this.files = [];
-
-                for (let i = 0; i < x.data.length; i++) {
-                    const element = x.data[i];
-                    element.marked = false;
-                    this.files.push(element);
-                }
-
-            }catch(error){
-                if(error.response.status == 403){
-                    this.$router.replace({
-                        name: "login"
-                    });
-                    return;
-                }
-                axiosError(error);
-            }
-            console.log("getFiles done");
-        },
         /**
          * gets all existing albums
          */
@@ -402,8 +343,12 @@ export default {
         // search event from menubar
         eventHub.$on("search", (search) => {
             console.log(`searching...  ${search}`);
+            // reset current view
+            this.page = 0;
             this.search = search;
-            this.getFiles();
+            this.files=[];
+            // setting files empty  already triggers onRequestAppend from the grid
+            //this.onRequestAppend();
         });
 
 
@@ -443,7 +388,6 @@ export default {
         }
         
         this.loginChecked = true;
-        this.getFiles();
         this.getAlbums();
 
     },
