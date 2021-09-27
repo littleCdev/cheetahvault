@@ -94,8 +94,11 @@
                             <v-row>
                                 <v-col cols="12"
                                     ><p>Date: {{ file.filedate }}</p>
-                                    <v-icon @click="shareopen=true">mdi-share</v-icon>
-                                    </v-col>
+                                </v-col>
+                                <v-col cols="12">
+                                    <a class="white--text" @click="shareopen=true">Share <v-icon >mdi-share</v-icon> </a>
+                                    
+                                </v-col>
 
                                 <v-col cols="12"
                                     ><p :title="file.filesize">Size: {{ file.filesizestr }}</p></v-col
