@@ -241,19 +241,23 @@ export default {
         eventHub.$on("createShareClosed", () => {
             this.shareopen = false;
         });
-        // keyboard navigation
-        document.addEventListener('keydown', (e)=>{
+        
+        document.addEventListener('keydown',this.keydownEvent);
+    },
+    destroyed() {
+        document.removeEventListener("keydown",this.keydownEvent);
+    },
+    methods: {
+        /**
+         * keyboard navigation
+         */
+        keydownEvent(e){
             if(e.code == "ArrowLeft"){
                 eventHub.$emit("lightboxprev")
             }else if(e.code == "ArrowRight"){
                 eventHub.$emit("lightboxnext")
             }
-        });
-    },
-    destroyed() {
-        document.removeEventListener("keydown");
-    },
-    methods: {
+        },
         /**
          * gets tags for currently selected file
          */
