@@ -38,6 +38,13 @@ a{
     /* i don't like the underline for links */
     text-decoration: none;
 }
+
+.fullheight{
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    display: block;
+}
 </style>>
 
 
@@ -118,7 +125,7 @@ a{
         </v-main>
 
         <v-main v-else-if="isfile && file">
-            <v-card class="whitebg">
+            <v-card class="whitebg fullheight">
                 <v-card-title class="justify-center">
                     <h4 class="white--text">{{ file.originalfilename }}</h4>
                 </v-card-title>
