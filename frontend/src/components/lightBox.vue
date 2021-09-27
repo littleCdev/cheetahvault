@@ -29,6 +29,7 @@
 
 <template>
     <v-dialog v-model="dialogopen" v-if="file">
+        <share-popup v-if="shareopen" :file="file.filename"></share-popup>
             <v-card class="whitebg">
                 <v-card-title class="justify-center">
                     <h4 class="white--text">{{ file.originalfilename }}</h4>
@@ -92,8 +93,10 @@
                         <v-col cols="3" class="white--text">
                             <v-row>
                                 <v-col cols="12"
-                                    ><p>Date: {{ file.filedate }}</p></v-col
-                                >
+                                    ><p>Date: {{ file.filedate }}</p>
+                                    <v-icon @click="shareopen=true">mdi-share</v-icon>
+                                    </v-col>
+
                                 <v-col cols="12"
                                     ><p :title="file.filesize">Size: {{ file.filesizestr }}</p></v-col
                                 >
@@ -109,7 +112,26 @@
                                     >
                                 </v-col>
 
-                                <v-col cols="12">
+
+                                <v-col cols="12"
+                                    v-if="editmode">
+                                    Tags <v-icon @click="editmode=false">mdi-window-close</v-icon>
+                                    <v-combobox
+                                        v-model="tags"
+                                        :items="allTags"
+                                        multiple
+                                        persistent-hint
+                                        small-chips
+                                        deletable-chips
+                                        @change="saveTags"
+                                    >
+                                    </v-combobox>
+                                </v-col>
+
+
+                                <v-col cols="12"
+                                    v-else>
+                                    Tags <v-icon @click="editmode=true">mdi-pencil-outline</v-icon>
                                     <v-chip-group>
                                         <v-chip
                                             v-for="(tag, index) in tags"
@@ -130,13 +152,15 @@
 <script>
 
 import vuePlayer from "@algoz098/vue-player";
-
+import sharePopup from "../components/sharePopup.vue";
 import axios from 'axios';
 import axiosError  from "../components/checkAjaxError";
+import eventHub from "../components/eventhub";
 
 export default {
     components:{
-        vuePlayer
+        vuePlayer,
+        sharePopup
     },
     props:{
         files:{
@@ -146,7 +170,7 @@ export default {
         index:{
             type:Number,
             optinal:false,
-        }
+        },
     },
     watch:{
         index: function (newValue) {
@@ -163,6 +187,14 @@ export default {
         }
     },
     data: () => ({
+        /**
+         * sharepopup open
+         */
+        shareopen:false,
+        /**
+         * true-> tags are editable
+         */
+        editmode:false,
         /**
          * volume for the videoplayer, is set to 0 if dialog is closed
          */
@@ -200,7 +232,9 @@ export default {
         this.getTagsForFile();
     },
     async created(){
-
+        eventHub.$on("createShareClosed", () => {
+            this.shareopen = false;
+        });
     },
     methods: {
         /**

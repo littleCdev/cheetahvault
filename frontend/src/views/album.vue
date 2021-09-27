@@ -42,6 +42,8 @@ a{
         <Menu v-if="markedFiles < 1" :key="markedFiles" :album=true></Menu>
         <MenuSelected v-if="markedFiles > 0" :album=true :key="markedFiles"></MenuSelected>
         
+        <share-popup v-if="shareopen" :album="albumKey"></share-popup>
+
         <lightBox
             :files="files"
             :index=selectedIndex
@@ -129,6 +131,7 @@ a{
 <script>
 import Axios from "axios";
 import Menu from "./menu.vue";
+import sharePopup from "../components/sharePopup.vue";
 import MenuSelected from "./menuselected.vue"; // menu if items are selected (delete, add album etc)
 import eventHub from "../components/eventhub";
 import { MasonryInfiniteGrid } from "@egjs/vue-infinitegrid";
@@ -143,9 +146,14 @@ export default {
         Menu,
         MasonryInfiniteGrid,
         MenuSelected,
-        lightBox
+        lightBox,
+        sharePopup
     },
     data: () => ({
+        /**
+         * if share popup is open
+         */
+        shareopen:false,
         /**
          * selected fileindex for lightbox
          * (index of this.files)
@@ -200,6 +208,41 @@ export default {
         files: [],
     }),
     methods: {
+        /**
+         * removes all files with "marked" attribute from array
+         */
+        removeMarkedFiles(){
+            for (let i = this.files.length-1; i >= 0; i--) {
+                console.log(i);
+                if(this.files[i].marked)
+                    this.files.splice(i,1);
+            }
+            this.clearMarkedFiles();
+        },
+        /**
+         * deletes all marked files from server
+         */
+        async deleteMarkedFiles(){
+            let fileKeys = [];
+            for (let i = 0; i < this.files.length; i++) {
+                if(this.files[i].marked)
+                    fileKeys.push(this.files[i].filename);
+            }
+
+            try {
+                this.loading = true;
+                await axios.post("files/deletemany",{
+                    files:fileKeys
+                });
+                this.removeMarkedFiles();
+            } catch (error) {
+                console.log(error);
+                axiosError(error);
+            }finally{
+                this.loading = false;
+            }
+
+        },
         async deleteAlbum(){
             try {
                 await axios.delete(`albums/${this.albumKey}/`)
@@ -223,11 +266,7 @@ export default {
                     files:fileKeys
                 })
 
-                for (let i = this.files.length-1; i >= 0; i--) {
-                    console.log(i);
-                    if(this.files[i].marked)
-                        this.files.splice(i,1);
-                }
+                this.removeMarkedFiles();
 
                 this.markedFiles = 0;
                 this.markedFilesArray = [];
@@ -405,6 +444,18 @@ export default {
         // delete album
         eventHub.$on("deletealbum", () => {
             this.deleteAlbum();
+        });
+        // share album via popup
+        eventHub.$on("sharealbum", () => {
+            this.shareopen = true;
+        });
+        // dlete event from "menuselected"
+        eventHub.$on("delete", () => {
+            this.deleteMarkedFiles();
+        });
+        // sharepopup closed
+        eventHub.$on("createShareClosed", () => {
+            this.shareopen = false;
         });
     },
     async mounted() {

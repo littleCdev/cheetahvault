@@ -58,6 +58,12 @@ a {
                         </v-list-item>
 
                         <v-list-item v-if="album">
+                            <v-list-item-title @click="emitAction('sharealbum')"
+                                >Share album</v-list-item-title
+                            >
+                        </v-list-item>
+
+                        <v-list-item v-if="album">
                             <v-list-item-title @click="emitAction('deletealbum')"
                                 >Delete album</v-list-item-title
                             >
