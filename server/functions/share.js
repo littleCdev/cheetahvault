@@ -178,17 +178,16 @@ async function fileIsInShare(sharekey,filekey){
     let share = await getShare(sharekey);
 
     if(share.isFile){
-        let query = "select * from files where filename=? and id=?";
-        let res = await db.all(query,[filekey,share.targetId]);
+        let query = "select * from files where filename=? or thumbnail=? or videopreview=? and id=?";
+        let res = await db.all(query,[filekey,filekey,filekey,share.targetId]);
 
         if(res.length > 0)
             return true;
 
         return false;
     }else{
-        let query = "select * from files join albummap on files.id=albummap.fileid where albummap.ablumid=? and files.filename=?";
-        let res = await db.all(query,[share.targetId,filekey])
-
+        let query = "select * from files join albummap on files.id=albummap.fileid where albummap.ablumid=? and files.filename=? or files.thumbnail=? or files.videopreview=?";
+        let res = await db.all(query,[share.targetId,filekey,filekey,filekey])
         if(res.length > 0)
             return true;
 
