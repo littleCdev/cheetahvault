@@ -36,9 +36,11 @@ function getThumbnailFromVideo(dir,file){
 
 async function createVideoScreenshot(id,dir,file){
     let videopreview = await getThumbnailFromVideo(dir,file);
-    let newname = rndStr(10,file);
 
+    Log.debug(`created new videoprevie: ${videopreview}`);
+    let newname = rndStr(10,videopreview);
     await fs.rename(dir+videopreview,dir+newname);
+    Log.debug(`renamed ${dir+videopreview} to ${dir+newname}`)
 
     let dimensions = await sizeOf(dir+newname);
 
