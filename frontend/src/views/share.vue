@@ -143,26 +143,20 @@ a{
                             <vue-player
                                 v-if="file.filetype == 'video'"
                                 class="video"
-                                :src="
-                                    $url +
-                                    'files/' +
-                                    file.filepath +
-                                    file.filename
-                                "
-                                :poster="$url+'public/f/'+sharekey+'/'+file.filepath+file.videopreview.file+'/'+file.videopreview.file"
+                                :src="$url+'public/f/'+sharekey+'/'+file.filepath+file.filename+'/'+file.filename"
+                                :poster="$url+'public/f/'+sharekey+'/'+file.filepath+file.videopreview.file+'/poster'"
 
-                                :autoplay="true"
-                                :volume="volume"
+                                :autoplay="false"
                             ></vue-player>
 
-                            <a :href="$url+'public/f/'+sharekey+'/'+file.filepath+file.filename+'/'+file.originalfilename" 
-                                :download="file.originalfilename"
+                            <a :href="$url+'public/f/'+sharekey+'/'+file.filepath+file.filename+'/'+file.filename" 
+                                :download="file.filename"
                                  v-if="file.filetype == 'file'">
                                 <h2 class="white--text">
                                     Download
                                     <v-icon>mdi-download</v-icon>
                                     <br>
-                                    {{file.originalfilename}}
+                                    {{file.filename}}
                                     <br>
                                     {{file.filesize}}
                                 </h2>
@@ -205,6 +199,7 @@ import Menu from "./menuplain.vue";
 import { MasonryInfiniteGrid } from "@egjs/vue-infinitegrid";
 import axios from 'axios';
 import axiosError  from "../components/checkAjaxError";
+import vuePlayer from "@algoz098/vue-player";
 
 
 import lightBox from "../components/lightBoxpublic.vue";
@@ -212,7 +207,8 @@ export default {
     components: {
         Menu,
         MasonryInfiniteGrid,
-        lightBox
+        lightBox,
+        vuePlayer
     },
     data: () => ({
 
