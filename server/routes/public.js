@@ -5,7 +5,7 @@ const Log = require('../log');
 const Config = require("../config.json");
 const Share = require("../functions/share");
 const Album = require("../functions/albums");
-const File = require("../file");
+const File = require("../functions/file");
 const asyncHandler = require("../functions/asyncHandler");
 
 

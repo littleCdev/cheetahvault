@@ -1,7 +1,7 @@
 const routes = require('express').Router();
 
 const Log = require('../log');
-const cheetahFile = require("../file");
+const cheetahFile = require("../functions/file");
 const asyncHandler = require("../functions/asyncHandler");
 
 

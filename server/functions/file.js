@@ -3,19 +3,19 @@ const Path = require('path');
 
 const getExif = require('exif-async');
 
-const Config = require("./config.json");
-const db = require("./db");
-const Log = require("./log");
-const rndStr = require("./rnd").filename;
+const Config = require("../config.json");
+const db = require("../db");
+const Log = require("../log");
+const rndStr = require("../rnd").filename;
 const sharp = require('sharp');
-const simpledate = require("./helpers").DatetimeToStr;
-const humanfilesize = require("./helpers").humanFileSize;
+const simpledate = require("../helpers").DatetimeToStr;
+const humanfilesize = require("../helpers").humanFileSize;
 
 const { promisify } = require('util')
 const sizeOf = promisify(require('image-size'))
 
-const cheetahimage = require("./functions/imagepreview")
-const cheetahvideo = require("./functions/videopreview")
+const cheetahimage = require("./imagepreview")
+const cheetahvideo = require("./videopreview")
 
 class thumnailinfo{
     x=0;

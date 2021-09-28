@@ -3,7 +3,7 @@ const db = require("../db");
 const Log = require("../log");
 const rndStr = require("../rnd").filename;
 const simpledate = require("../helpers").DatetimeToStr;
-const File = require("../file");
+const File = require("./file");
 
 class publicAlbum{
     name="";

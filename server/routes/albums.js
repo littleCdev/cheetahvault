@@ -3,7 +3,7 @@ const routes = require('express').Router();
 const Log = require('../log');
 const Config = require("../config.json");
 const Albums = require("../functions/albums");
-const Files = require("../file");
+const Files = require("../functions/file");
 const asyncHandler = require("../functions/asyncHandler");
 
 
