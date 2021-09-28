@@ -44,9 +44,11 @@ routes.put("/",asyncHandler(async(req,res,next)=>{
  */
  routes.get("/:KEY/",asyncHandler(async(req,res,next)=>{
     let id = await Albums.keyToId(req.params.KEY);
+    let asc = (req.query.asc||"")=="asc"?true:false;
+    let order = (req.query.order||"");
 
     let info = await Albums.getInfo(id);
-    info.files = await Albums.getFiles(req.params.KEY);
+    info.files = await Albums.getFiles(req.params.KEY,order,asc);
     res.send(info)
 }))
 

@@ -60,6 +60,8 @@ CREATE TABLE IF NOT EXISTS `albums`(
 CREATE TABLE IF NOT EXISTS `albummap`(
     fileid              INTEGER NOT NULL,
     albumid             INTEGER NOT NULL,
+    addtime             INTEGER NOT NULL DEFAULT 0,
+    adddate             VARCHAR(255) NOT NULL DEFAULT '',
     PRIMARY KEY(albumid,fileid)
 );
 

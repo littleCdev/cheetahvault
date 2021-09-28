@@ -83,11 +83,14 @@ async function craeteNew(title){
         throw `at least one file-id does not exist (${res[0].cnt} != ${files.length})`;
     }
 
-    let stm = db.prepare("insert or ignore into albummap (fileid,albumid) values (?,?)");
+    let stm = db.prepare("insert or ignore into albummap (fileid,albumid,addtime,adddate) values (?,?,?,?)");
 
     for (let i = 0; i < files.length; i++) {
+        
+        let adddate = simpledate(orignaldate);
+        let addtime = ((new Date())/1000);
         Log.info(`trying to add ${files[i]} to ${albumid}`);
-        let x = await db.stmRunAsync(stm,[files[i],albumid])
+        let x = await db.stmRunAsync(stm,[files[i],albumid],addtime,adddate)
         Log.info(`added ${files[i]} to ${albumid}`);
     }
 
@@ -136,10 +139,21 @@ async function keyToId(key){
  * @param {string} key 
  * @returns {Array}
  */
-async function getFiles(key){
+async function getFiles(key,orderby="",asc=true){
     let albumId = await keyToId(key);
+    
+    switch(orderby){
+        
+        default:
+        case "filename": orderby="files.originalfilename";break;
+        case "filedate": orderby="files.sortdate";break;
+        case "upload": orderby="files.uploadtime";break;
+        case "latest":orderby = "albummap.addtime";break;
+    }
 
-    let images = await db.all("select files.* from files join albummap on albummap.fileid=files.id where albummap.albumid=?",[albumId]);
+    let order = asc?"ASC":"DESC";
+console.log(`select files.* from files join albummap on albummap.fileid=files.id where albummap.albumid=? order by ${orderby} ${order}`)
+    let images = await db.all(`select files.* from files join albummap on albummap.fileid=files.id where albummap.albumid=? order by ${orderby} ${order}`,[albumId]);
 
     return images;
 }
