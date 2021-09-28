@@ -388,6 +388,43 @@ export default {
             }
             console.log("getFiles done");
         },
+
+
+        /**
+         * search event from menubar
+         */
+        eventSearch(search){
+            console.log(`searching...  ${search}`);
+            this.search = search;
+            this.getFiles();
+        },
+        /**
+         * add to album event from menubar
+         */
+        eventOpenAddToAlbum(){
+            this.markedFilesArray = [];
+            for (let i = 0; i < this.files.length; i++) {
+                if(this.files[i].marked)
+                    this.markedFilesArray.push(this.files[i]);
+            }
+
+            this.albumDialogOpen = true;            
+        },
+
+        getEvents(){
+            return {
+                "editmode":()=>this.editmode=!this.editmode,// edit mode from menubar
+                "search":this.eventSearch,
+                "clear":this.clearMarkedFiles,
+                "album":this.eventOpenAddToAlbum,
+                "addToAlbumClosed":()=>this.albumDialogOpen = false,
+                "remove":this.removeFiles,
+                "deletealbum":this.deleteAlbum,
+                "sharealbum":()=>this.shareopen=true,// share album via popup
+                "delete":this.deleteMarkedFiles,
+                "createShareClosed":()=>this.shareopen = false, // sharepopup closed
+            }
+        }
     },
 
     watch: {
@@ -403,60 +440,16 @@ export default {
 
     },
     created() {
-        document.onpaste = null;
-
-        // edit mode from menubar
-        eventHub.$on("editmode", () => {
-            this.editmode = !this.editmode;
-        });
-        // search event from menubar
-        eventHub.$on("search", (search) => {
-            console.log(`searching...  ${search}`);
-            this.search = search;
-            this.getFiles();
-        });
-
-        // clear selection
-        eventHub.$on("clear", () => {
-            this.clearMarkedFiles();
-        });
-
-        // open "add to album" popup
-        eventHub.$on("album", () => {
-            this.markedFilesArray = [];
-            for (let i = 0; i < this.files.length; i++) {
-                if(this.files[i].marked)
-                    this.markedFilesArray.push(this.files[i]);
-            }
-
-            this.albumDialogOpen = true;
-        });
-
-        // close "add to album" popup
-        eventHub.$on("addToAlbumClosed", () => {
-            this.albumDialogOpen = false;
-        });
-
-        // remove files from album event
-        eventHub.$on("remove", () => {
-            this.removeFiles();
-        });
-        // delete album
-        eventHub.$on("deletealbum", () => {
-            this.deleteAlbum();
-        });
-        // share album via popup
-        eventHub.$on("sharealbum", () => {
-            this.shareopen = true;
-        });
-        // dlete event from "menuselected"
-        eventHub.$on("delete", () => {
-            this.deleteMarkedFiles();
-        });
-        // sharepopup closed
-        eventHub.$on("createShareClosed", () => {
-            this.shareopen = false;
-        });
+        // init events
+        for (const [key, value] of Object.entries(this.getEvents())) {
+            eventHub.$on(key,value);
+        }
+    },
+    destroyed(){
+       // deinit events
+        for (const [key, value] of Object.entries(this.getEvents())) {
+            eventHub.$off(key,value);
+        }
     },
     async mounted() {
         let result =await trylogin();

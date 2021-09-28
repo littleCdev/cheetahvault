@@ -191,6 +191,9 @@ export default {
         console.log("created");
         document.onpaste = this.pasteevent;
     },
+    destroyed(){
+        document.onpaste = null;
+    },
     components: {
         Menu,
     },

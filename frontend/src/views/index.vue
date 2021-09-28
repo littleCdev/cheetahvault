@@ -321,6 +321,64 @@ export default {
                 axiosError(error);
                 console.log(error);
             }
+        },
+
+        
+        /**
+         * search event from menubar
+         */
+        eventSearch(searchstring){
+            console.log(`searching...  ${searchstring}`);
+            // reset current view
+            this.page = 0;
+            this.search = searchstring;
+            this.files=[];
+        },
+        /**
+         * arrowright event from lightbox
+         */
+        async eventLightBoxNext(){
+            console.log(`${this.selectedIndex} ${this.files.length}`)
+            if((this.selectedIndex+1) >= this.files.length){
+                console.log(`requesting more due to keyboard event`)
+                await this.onRequestAppend();
+            }
+            if((this.selectedIndex+1) <= this.files.length)
+                this.selectedIndex++;
+        },
+        /**
+         * arrowleft event from lightbox
+         */
+        eventLightBoxPrevious(){
+            if(this.selectedIndex >0)
+                this.selectedIndex--;
+        },
+        /**
+         * add to album event from menubar
+         */
+        eventOpenAddToAlbum(){
+            this.markedFilesArray = [];
+            for (let i = 0; i < this.files.length; i++) {
+                if(this.files[i].marked)
+                    this.markedFilesArray.push(this.files[i]);
+            }
+
+            this.albumDialogOpen = true;            
+        },
+
+        getEvents(){
+            return {
+                "editmode":()=>this.editmode=!this.editmode,
+                "search":this.eventSearch,
+                "clear":this.clearMarkedFiles,
+                "delete":this.deleteMarkedFiles,
+                "lightboxprev":this.eventLightBoxPrevious,
+                "lightboxnext":this.eventLightBoxNext,
+                "lightboxclosed":()=>this.selectedIndex=-1,
+
+                "addToAlbumClosed":()=>this.albumDialogOpen=false,
+                "album":this.eventOpenAddToAlbum,
+            }
         }
     },
 
@@ -332,71 +390,25 @@ export default {
             console.log(`albumDialogOpen: ${newValue}`);
         },
     },
+
+
     created() {
 
         document.onpaste = null;
         console.log(this.$url);
-        // edit mode from menubar
-        eventHub.$on("editmode", () => {
-            this.editmode = !this.editmode;
-        });
-        // search event from menubar
-        eventHub.$on("search", (search) => {
-            console.log(`searching...  ${search}`);
-            // reset current view
-            this.page = 0;
-            this.search = search;
-            this.files=[];
-            // setting files empty  already triggers onRequestAppend from the grid
-            //this.onRequestAppend();
-        });
 
-
-        // clear event from "menuselected"
-        eventHub.$on("clear", () => {
-            this.clearMarkedFiles();
-        });
-
-        // delete event from "menuselected"
-        eventHub.$on("delete", () => {
-            this.deleteMarkedFiles();
-        });
-        // keyboard navigation
-        eventHub.$on("lightboxprev", () => {
-            if(this.selectedIndex >0)
-                this.selectedIndex--;
-        });
-        // keyboard navigation
-        eventHub.$on("lightboxnext", async () => {
-            console.log(`${this.selectedIndex} ${this.files.length}`)
-            if((this.selectedIndex+1) >= this.files.length){
-                console.log(`requesting more due to keyboard event`)
-                await this.onRequestAppend();
-            }
-            if((this.selectedIndex+1) <= this.files.length)
-                this.selectedIndex++;
-        });
-        
-        
-        eventHub.$on("album", () => {
-            this.markedFilesArray = [];
-            for (let i = 0; i < this.files.length; i++) {
-                if(this.files[i].marked)
-                    this.markedFilesArray.push(this.files[i]);
-            }
-
-            this.albumDialogOpen = true;
-        });
-
-        eventHub.$on("addToAlbumClosed", () => {
-            this.albumDialogOpen = false;
-        });
-        
-        // reset selected index so you can select the same file/image again
-        eventHub.$on("lightboxclosed", () => {
-            this.selectedIndex = -1;
-        });
+        // init events
+        for (const [key, value] of Object.entries(this.getEvents())) {
+            eventHub.$on(key,value);
+        }
     },
+    destroyed(){
+       // deinit events
+        for (const [key, value] of Object.entries(this.getEvents())) {
+            eventHub.$off(key,value);
+        }
+    },
+
     async mounted() {
         let result =await trylogin();
         console.log(result);
