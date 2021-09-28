@@ -202,6 +202,10 @@ export default {
          * array where all files are stored in 
          */
         files: [],
+        /**
+         * sort parameters
+         */
+        sortoptions: "asc=desc&order=upload",
     }),
     methods: {
         /**
@@ -316,7 +320,7 @@ export default {
             this.loading = true;
             try{
                 let x = await Axios.get(
-                    `albums/${this.albumKey}`
+                    `albums/${this.albumKey}?${this.sortoptions}`
                 );
                 this.loading = false;
 
@@ -415,6 +419,17 @@ export default {
             if(this.selectedIndex >0)
                 this.selectedIndex--;
         },
+        /**
+         * sets new sortoptions and forces reload of the files
+         */
+        eventSort(e){
+            this.sortoptions = e;
+            // reset current view
+            this.page = 0;
+            this.files=[];
+
+            this.getAlbum();
+        },
         getEvents(){
             return {
                 "clear":this.clearMarkedFiles,
@@ -431,6 +446,7 @@ export default {
                 "lightboxnext":this.eventLightBoxNext,
                 "lightboxclosed":()=>this.selectedIndex=-1,
 
+                "sort":this.eventSort,
             }
         }
     },
@@ -472,7 +488,7 @@ export default {
 
         this.albumKey = this.$route.params.key;
         this.getAlbum();
-        
+
         // enable edit-title if query hast ?edit set
         // focus will be set after info is loaded
         if(this.$route.query.edit){
