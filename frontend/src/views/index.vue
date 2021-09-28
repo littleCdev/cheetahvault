@@ -391,6 +391,11 @@ export default {
         eventHub.$on("addToAlbumClosed", () => {
             this.albumDialogOpen = false;
         });
+        
+        // reset selected index so you can select the same file/image again
+        eventHub.$on("lightboxclosed", () => {
+            this.selectedIndex = -1;
+        });
     },
     async mounted() {
         let result =await trylogin();

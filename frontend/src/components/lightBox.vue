@@ -177,6 +177,12 @@ export default {
     },
     watch:{
         index: function (newValue) {
+            // -1 => no file selected
+            if(newValue == -1){
+                this.file = null;
+                return;
+            }
+
             console.log(`index: ${newValue}`);
             this.file = this.files[this.index];
             this.getTagsForFile();
@@ -185,6 +191,7 @@ export default {
         },
         dialogopen:function(newValue){
             if(!newValue){
+                eventHub.$emit("lightboxclosed");
                 console.log("dialog closed, setting stopping video")
                 this.videoplaying = false;
             }else{
