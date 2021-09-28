@@ -254,10 +254,28 @@ async function getAllTags(id){
     return ret;
 }
 
-
-let getlatest = async (search="",page=0,n=20)=>{
+/**
+ * 
+ * @param {String} search Searchterm 
+ * @param {Number} page starting from 0
+ * @param {Number} n files per page
+ * @param {String} sortby filedate|filename|upload
+ * @param {Boolean} asc true->asc false -> desc
+ * @returns 
+ */
+let getlatest = async (search="",page=0,n=20,sortby="filedate",asc=true)=>{
 
     let images =  [];
+
+    let ordertype = asc?"ASC":"DESC";
+    let orderby = "sortdate";
+
+    switch(sortby){
+        default:
+        case "filedate" : orderby = "sortdate"; break;
+        case "filename" : orderby = "filename"; break;
+        case "upload" : orderby = "uploadtime"; break;
+    }
 
     if(search.length>0){
         Log.info(`searching for: ${search}`)
@@ -271,9 +289,9 @@ let getlatest = async (search="",page=0,n=20)=>{
         ids = ids.substr(0,ids.length-1);
         Log.info(`searching for: ${search} ids: ${ids}`)
     
-        images = await db.all(`select f.* from  files f left join tagmap tm on f.id=tm.imageid where tm.tagid in (${ids}) or f.originalfilename  like ? group by f.id order by f.sortdate ASC limit ? offset ?;`,[`%${search}%`,n,n*page])
+        images = await db.all(`select f.* from  files f left join tagmap tm on f.id=tm.imageid where tm.tagid in (${ids}) or f.originalfilename  like ? group by f.id order by f.${orderby} ${ordertype} limit ? offset ?;`,[`%${search}%`,n,n*page])
     }else{
-        images = await db.all("select * from files where showinindex=1 order by sortdate ASC limit ? offset ?",[n,n*page]);
+        images = await db.all(`select * from files where showinindex=1 order by ${orderby} ${ordertype} limit ? offset ?`,[n,n*page]);
     }
 
     return images;
