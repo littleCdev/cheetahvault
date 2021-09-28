@@ -59,6 +59,7 @@
                             <vue-player
                                 v-if="file.filetype == 'video'"
                                 class="video"
+                                v-model="videoplaying"
                                 :src="
                                     $url +
                                     'files/' +
@@ -72,7 +73,6 @@
                                     file.videopreview
                                 "
                                 :autoplay="true"
-                                :volume="volume"
                             ></vue-player>
 
                             <a :href="$url+'files/'+file.filepath+file.filename+'/'+file.originalfilename" 
@@ -94,8 +94,11 @@
                             <v-row>
                                 <v-col cols="12"
                                     ><p>Date: {{ file.filedate }}</p>
-                                    <v-icon @click="shareopen=true">mdi-share</v-icon>
-                                    </v-col>
+                                </v-col>
+                                <v-col cols="12">
+                                    <a class="white--text" @click="shareopen=true">Share <v-icon >mdi-share</v-icon> </a>
+                                    
+                                </v-col>
 
                                 <v-col cols="12"
                                     ><p :title="file.filesize">Size: {{ file.filesizestr }}</p></v-col
@@ -174,6 +177,12 @@ export default {
     },
     watch:{
         index: function (newValue) {
+            // -1 => no file selected
+            if(newValue == -1){
+                this.file = null;
+                return;
+            }
+
             console.log(`index: ${newValue}`);
             this.file = this.files[this.index];
             this.getTagsForFile();
@@ -182,7 +191,11 @@ export default {
         },
         dialogopen:function(newValue){
             if(!newValue){
-                this.volume = 0;
+                eventHub.$emit("lightboxclosed");
+                console.log("dialog closed, setting stopping video")
+                this.videoplaying = false;
+            }else{
+                this.videoplaying = true;
             }
         }
     },
@@ -196,9 +209,9 @@ export default {
          */
         editmode:false,
         /**
-         * volume for the videoplayer, is set to 0 if dialog is closed
+         * will be set to false if dialog is closed
          */
-        volume:1,
+        videoplaying:true,
 
         /**
          * tags from the file
@@ -235,8 +248,23 @@ export default {
         eventHub.$on("createShareClosed", () => {
             this.shareopen = false;
         });
+        
+        document.addEventListener('keydown',this.keydownEvent);
+    },
+    destroyed() {
+        document.removeEventListener("keydown",this.keydownEvent);
     },
     methods: {
+        /**
+         * keyboard navigation
+         */
+        keydownEvent(e){
+            if(e.code == "ArrowLeft"){
+                eventHub.$emit("lightboxprev")
+            }else if(e.code == "ArrowRight"){
+                eventHub.$emit("lightboxnext")
+            }
+        },
         /**
          * gets tags for currently selected file
          */

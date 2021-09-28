@@ -51,6 +51,40 @@ a {
 
                 <v-list>
                     <v-list-item-group>
+                        <v-list-item  v-if="!upload">
+                            <v-list-item-icon><v-icon class="black--text">mdi-arrow-up</v-icon></v-list-item-icon>
+                            <v-list-item-title @click="emitAction('sort','asc=asc&order=upload')">uploadtime </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item  v-if="!upload">
+                            <v-list-item-icon><v-icon class="black--text">mdi-arrow-down</v-icon></v-list-item-icon>
+                            <v-list-item-title @click="emitAction('sort','asc=desc&order=upload')">uploadtime </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item  v-if="!upload">
+                            <v-list-item-icon><v-icon class="black--text">mdi-arrow-up</v-icon></v-list-item-icon>
+                            <v-list-item-title @click="emitAction('sort','asc=asc&order=filedate')">Filedate </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item  v-if="!upload">
+                            <v-list-item-icon><v-icon class="black--text">mdi-arrow-down</v-icon></v-list-item-icon>
+                            <v-list-item-title @click="emitAction('sort','asc=asc&order=filedate')">Filedate </v-list-item-title>
+                        </v-list-item>
+
+                        <v-list-item  v-if="album">
+                            <v-list-item-icon><v-icon class="black--text">mdi-arrow-up</v-icon></v-list-item-icon>
+                            <v-list-item-title @click="emitAction('sort','asc=asc&order=filename')">filename </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item  v-if="album">
+                            <v-list-item-icon><v-icon class="black--text">mdi-arrow-down</v-icon></v-list-item-icon>
+                            <v-list-item-title @click="emitAction('sort','asc=desc&order=filename')">filename </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item  v-if="album">
+                            <v-list-item-icon><v-icon class="black--text">mdi-arrow-up</v-icon></v-list-item-icon>
+                            <v-list-item-title @click="emitAction('sort','asc=asc&order=latest')">latest </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item  v-if="album">
+                            <v-list-item-icon><v-icon class="black--text">mdi-arrow-down</v-icon></v-list-item-icon>
+                            <v-list-item-title @click="emitAction('sort','asc=asc&order=latest')">latest </v-list-item-title>
+                        </v-list-item>
+
                         <v-list-item>
                             <v-list-item-title @click="editmode"
                                 >Editmode</v-list-item-title
@@ -99,6 +133,11 @@ export default {
             type:Boolean,
             optional:true,
             default:false
+        },
+        upload:{
+            type:Boolean,
+            optional:true,
+            default:false,
         }
     },
     methods: {
@@ -114,8 +153,8 @@ export default {
 
             eventHub.$emit("editmode");
         },
-        emitAction(action){
-            eventHub.$emit(action)
+        emitAction(action,props){
+            eventHub.$emit(action,props)
         }
     },
     data: () => ({

@@ -81,6 +81,7 @@ a{
                 </v-col>
                 <v-col cols="10" class="">
                     <masonry-infinite-grid
+                        @request-append="onRequestAppend"
                         class="container"
                         v-bind:gap="5">
 
@@ -132,21 +133,6 @@ a{
                         </div>
                     </masonry-infinite-grid>      
                 </v-col>
-                
-            </v-row>
-
-            <v-row v-if="!endreached || !loading">
-                <v-skeleton-loader
-                    v-intersect="{
-                        handler: pageEndReached,
-                        options: {
-                            threshold: [0, 0.5, 1.0],
-                        },
-                    }"
-                    width="200"
-                    height="200"
-                    type="card"
-                ></v-skeleton-loader>
             </v-row>
         </v-main>
     </div>
@@ -213,17 +199,19 @@ export default {
          * page for scrolling
          */
         page: 0,
-        /**
-         * end reached indicator 
-         */
-        endreached: false,
+
         /**
          * array where all files are stored in 
          */
         files: [],
 
+        /**
+         * sort parameters
+         */
+        sortoptions: "asc=desc&order=upload",
 
-        loginChecked:false, // prevent the pageEndReachedEvent from firing before login was checked in mounted();
+
+        loginChecked:false,
     }),
     methods: {
         /**
@@ -293,34 +281,21 @@ export default {
             }
             this.markedFiles = 0;
         },
-        /**
-         * page end trigger, tries to load the next page
-         */
-        pageEndReached(/*entries, observer*/) {
-            if(!this.loginChecked) 
-                return;
 
-            console.log(`pageEndReached`);
-            this.loadNextPage();
-        },
-        /**
-         * loads the next page
-         */
-        async loadNextPage() {
-            if (this.loading || this.endreached) return;
-
-            this.page += 1;
-
+        async onRequestAppend(e) {
+            console.group("loadmore");
+            console.log(e);
+            console.groupEnd("loadmore");
+            
+            if(e) e.wait();
             try {
                 this.loading = true;
-                console.log(`loading new page: ${this.page}`);
                 let x = await Axios.get(
-                    `search/${this.page}?search=${this.search}`
+                    `search/${this.page}?search=${this.search}&${this.sortoptions}`
                 );
 
                 if (x.data.length == 0) {
                     console.log(`no images left after page: ${this.page}`);
-                    this.endreached = true;
                     return;
                 }
 
@@ -331,44 +306,15 @@ export default {
                 }
 
                 this.loading = false;
+                this.page++;
             } catch (error) {
                 console.log(error);
                 axiosError(error);
+            }finally{
+                if(e) e.ready();
             }
         },
-        /**
-         * gets files using this.page and this.search
-         */
-        async getFiles() {
-            this.loading = true;
-            this.endreached = true;
-            this.page = 0;
-            try{
-                let x = await Axios.get(
-                    `search/${this.page}?search=${this.search}`
-                );
-                this.loading = false;
-                this.endreached = false;
 
-                this.files = [];
-
-                for (let i = 0; i < x.data.length; i++) {
-                    const element = x.data[i];
-                    element.marked = false;
-                    this.files.push(element);
-                }
-
-            }catch(error){
-                if(error.response.status == 403){
-                    this.$router.replace({
-                        name: "login"
-                    });
-                    return;
-                }
-                axiosError(error);
-            }
-            console.log("getFiles done");
-        },
         /**
          * gets all existing albums
          */
@@ -379,6 +325,73 @@ export default {
             } catch (error) {
                 axiosError(error);
                 console.log(error);
+            }
+        },
+
+
+        /**
+         * search event from menubar
+         */
+        eventSearch(searchstring){
+            console.log(`searching...  ${searchstring}`);
+            // reset current view
+            this.page = 0;
+            this.search = searchstring;
+            this.files=[];
+        },
+        /**
+         * arrowright event from lightbox
+         */
+        async eventLightBoxNext(){
+            console.log(`${this.selectedIndex} ${this.files.length}`)
+            if((this.selectedIndex+1) >= this.files.length){
+                console.log(`requesting more due to keyboard event`)
+                await this.onRequestAppend();
+            }
+            if((this.selectedIndex+1) <= this.files.length)
+                this.selectedIndex++;
+        },
+        /**
+         * arrowleft event from lightbox
+         */
+        eventLightBoxPrevious(){
+            if(this.selectedIndex >0)
+                this.selectedIndex--;
+        },
+        /**
+         * add to album event from menubar
+         */
+        eventOpenAddToAlbum(){
+            this.markedFilesArray = [];
+            for (let i = 0; i < this.files.length; i++) {
+                if(this.files[i].marked)
+                    this.markedFilesArray.push(this.files[i]);
+            }
+
+            this.albumDialogOpen = true;            
+        },
+
+        eventSort(e){
+            this.sortoptions = e;
+            // reset current view
+            this.page = 0;
+            this.files=[];
+        },
+
+        getEvents(){
+            return {
+                "editmode":()=>this.editmode=!this.editmode,
+                "search":this.eventSearch,
+                "clear":this.clearMarkedFiles,
+                "delete":this.deleteMarkedFiles,
+                "lightboxprev":this.eventLightBoxPrevious,
+                "lightboxnext":this.eventLightBoxNext,
+                "lightboxclosed":()=>this.selectedIndex=-1,
+
+                "addToAlbumClosed":()=>this.albumDialogOpen=false,
+                "album":this.eventOpenAddToAlbum,
+
+                "sort":this.eventSort,
             }
         }
     },
@@ -391,46 +404,25 @@ export default {
             console.log(`albumDialogOpen: ${newValue}`);
         },
     },
+
+
     created() {
 
         document.onpaste = null;
         console.log(this.$url);
-        // edit mode from menubar
-        eventHub.$on("editmode", () => {
-            this.editmode = !this.editmode;
-        });
-        // search event from menubar
-        eventHub.$on("search", (search) => {
-            console.log(`searching...  ${search}`);
-            this.search = search;
-            this.getFiles();
-        });
 
-
-        // clear event from "menuselected"
-        eventHub.$on("clear", () => {
-            this.clearMarkedFiles();
-        });
-
-        // delete event from "menuselected"
-        eventHub.$on("delete", () => {
-            this.deleteMarkedFiles();
-        });
-
-        eventHub.$on("album", () => {
-            this.markedFilesArray = [];
-            for (let i = 0; i < this.files.length; i++) {
-                if(this.files[i].marked)
-                    this.markedFilesArray.push(this.files[i]);
-            }
-
-            this.albumDialogOpen = true;
-        });
-
-        eventHub.$on("addToAlbumClosed", () => {
-            this.albumDialogOpen = false;
-        });
+        // init events
+        for (const [key, value] of Object.entries(this.getEvents())) {
+            eventHub.$on(key,value);
+        }
     },
+    destroyed(){
+       // deinit events
+        for (const [key, value] of Object.entries(this.getEvents())) {
+            eventHub.$off(key,value);
+        }
+    },
+
     async mounted() {
         let result =await trylogin();
         console.log(result);
@@ -443,7 +435,6 @@ export default {
         }
         
         this.loginChecked = true;
-        this.getFiles();
         this.getAlbums();
 
     },

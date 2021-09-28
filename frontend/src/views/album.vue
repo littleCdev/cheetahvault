@@ -199,13 +199,13 @@ export default {
          */
         page: 0,
         /**
-         * page end indicator to prevent endless loading
-         */
-        endreached: false,
-        /**
          * array where all files are stored in 
          */
         files: [],
+        /**
+         * sort parameters
+         */
+        sortoptions: "asc=desc&order=upload",
     }),
     methods: {
         /**
@@ -314,6 +314,44 @@ export default {
             this.markedFiles = 0;
         },
         /**
+         * 
+         */
+        async getAlbum() {
+            this.loading = true;
+            try{
+                let x = await Axios.get(
+                    `albums/${this.albumKey}?${this.sortoptions}`
+                );
+                this.loading = false;
+
+                this.files = [];
+
+                for (let i = 0; i < x.data.files.length; i++) {
+                    const element = x.data.files[i];
+                    element.marked = false;
+                    this.files.push(element);
+                }
+                this.albumname = x.data.albumname;
+                this._albumname = x.data.albumname;
+
+                // set focus if titleEdit was set to true via url "?edit=asdas"
+                if(this.titleEdit){
+                    this.$refs.title.focus();
+                }
+
+
+            }catch(error){
+                if(error.response.status == 403){
+                    this.$router.replace({
+                        name: "login"
+                    });
+                    return;
+                }
+                axiosError(error);
+            }
+            console.log("getFiles done");
+        },
+        /**
          * marks currently selected file private or public
          */
         async makePrivate() {
@@ -349,45 +387,68 @@ export default {
             }
         },
 
+
         /**
-         * gets files using this.page and this.search
+         * add to album event from menubar
          */
-        async getFiles() {
-            this.loading = true;
-            try{
-                let x = await Axios.get(
-                    `albums/${this.albumKey}`
-                );
-                this.loading = false;
-                this.endreached = false;
-
-                this.files = [];
-
-                for (let i = 0; i < x.data.files.length; i++) {
-                    const element = x.data.files[i];
-                    element.marked = false;
-                    this.files.push(element);
-                }
-                this.albumname = x.data.albumname;
-                this._albumname = x.data.albumname;
-
-                // set focus if titleEdit was set to true via url "?edit=asdas"
-                if(this.titleEdit){
-                    this.$refs.title.focus();
-                }
-
-
-            }catch(error){
-                if(error.response.status == 403){
-                    this.$router.replace({
-                        name: "login"
-                    });
-                    return;
-                }
-                axiosError(error);
+        eventOpenAddToAlbum(){
+            this.markedFilesArray = [];
+            for (let i = 0; i < this.files.length; i++) {
+                if(this.files[i].marked)
+                    this.markedFilesArray.push(this.files[i]);
             }
-            console.log("getFiles done");
+
+            this.albumDialogOpen = true;            
         },
+        /**
+         * arrowright event from lightbox
+         */
+        async eventLightBoxNext(){
+            console.log(`${this.selectedIndex} ${this.files.length}`)
+            if((this.selectedIndex+1) >= this.files.length){
+                console.log(`requesting more due to keyboard event`)
+                //await this.onRequestAppend();
+            }
+            if((this.selectedIndex+1) <= this.files.length)
+                this.selectedIndex++;
+        },
+        /**
+         * arrowleft event from lightbox
+         */
+        eventLightBoxPrevious(){
+            if(this.selectedIndex >0)
+                this.selectedIndex--;
+        },
+        /**
+         * sets new sortoptions and forces reload of the files
+         */
+        eventSort(e){
+            this.sortoptions = e;
+            // reset current view
+            this.page = 0;
+            this.files=[];
+
+            this.getAlbum();
+        },
+        getEvents(){
+            return {
+                "clear":this.clearMarkedFiles,
+                "album":this.eventOpenAddToAlbum,
+                "addToAlbumClosed":()=>this.albumDialogOpen = false,
+                "remove":this.removeFiles,
+                "deletealbum":this.deleteAlbum,
+                "sharealbum":()=>this.shareopen=true,// share album via popup
+                "delete":this.deleteMarkedFiles,
+                "createShareClosed":()=>this.shareopen = false, // sharepopup closed
+
+
+                "lightboxprev":this.eventLightBoxPrevious,
+                "lightboxnext":this.eventLightBoxNext,
+                "lightboxclosed":()=>this.selectedIndex=-1,
+
+                "sort":this.eventSort,
+            }
+        }
     },
 
     watch: {
@@ -403,60 +464,16 @@ export default {
 
     },
     created() {
-        document.onpaste = null;
-
-        // edit mode from menubar
-        eventHub.$on("editmode", () => {
-            this.editmode = !this.editmode;
-        });
-        // search event from menubar
-        eventHub.$on("search", (search) => {
-            console.log(`searching...  ${search}`);
-            this.search = search;
-            this.getFiles();
-        });
-
-        // clear selection
-        eventHub.$on("clear", () => {
-            this.clearMarkedFiles();
-        });
-
-        // open "add to album" popup
-        eventHub.$on("album", () => {
-            this.markedFilesArray = [];
-            for (let i = 0; i < this.files.length; i++) {
-                if(this.files[i].marked)
-                    this.markedFilesArray.push(this.files[i]);
-            }
-
-            this.albumDialogOpen = true;
-        });
-
-        // close "add to album" popup
-        eventHub.$on("addToAlbumClosed", () => {
-            this.albumDialogOpen = false;
-        });
-
-        // remove files from album event
-        eventHub.$on("remove", () => {
-            this.removeFiles();
-        });
-        // delete album
-        eventHub.$on("deletealbum", () => {
-            this.deleteAlbum();
-        });
-        // share album via popup
-        eventHub.$on("sharealbum", () => {
-            this.shareopen = true;
-        });
-        // dlete event from "menuselected"
-        eventHub.$on("delete", () => {
-            this.deleteMarkedFiles();
-        });
-        // sharepopup closed
-        eventHub.$on("createShareClosed", () => {
-            this.shareopen = false;
-        });
+        // init events
+        for (const [key, value] of Object.entries(this.getEvents())) {
+            eventHub.$on(key,value);
+        }
+    },
+    destroyed(){
+       // deinit events
+        for (const [key, value] of Object.entries(this.getEvents())) {
+            eventHub.$off(key,value);
+        }
     },
     async mounted() {
         let result =await trylogin();
@@ -470,12 +487,12 @@ export default {
         }
 
         this.albumKey = this.$route.params.key;
-        this.getFiles();
-        
+        this.getAlbum();
+
         // enable edit-title if query hast ?edit set
         // focus will be set after info is loaded
         if(this.$route.query.edit){
-            console.log("editmode")
+            console.log("titleEdit=true")
             this.titleEdit=true;
             
         }
