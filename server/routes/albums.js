@@ -126,14 +126,4 @@ routes.put("/:KEY/name",asyncHandler(async(req,res,next)=>{
 }));
 
 
-/**
- * returns tags of an file
- */
- routes.get("/:ID/tags",asyncHandler(async(req,res,next)=>{
-
-    let tags = await cheetahFile.getTags(req.params.ID);
-    res.send(tags);
-
-}));
-
 module.exports = routes;
