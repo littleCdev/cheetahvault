@@ -205,6 +205,11 @@ export default {
          */
         files: [],
 
+        /**
+         * sort parameters
+         */
+        sortoptions: "asc=desc&order=upload",
+
 
         loginChecked:false,
     }),
@@ -286,7 +291,7 @@ export default {
             try {
                 this.loading = true;
                 let x = await Axios.get(
-                    `search/${this.page}?search=${this.search}`
+                    `search/${this.page}?search=${this.search}&${this.sortoptions}`
                 );
 
                 if (x.data.length == 0) {
@@ -323,7 +328,7 @@ export default {
             }
         },
 
-        
+
         /**
          * search event from menubar
          */
@@ -366,6 +371,13 @@ export default {
             this.albumDialogOpen = true;            
         },
 
+        eventSort(e){
+            this.sortoptions = e;
+            // reset current view
+            this.page = 0;
+            this.files=[];
+        },
+
         getEvents(){
             return {
                 "editmode":()=>this.editmode=!this.editmode,
@@ -378,6 +390,8 @@ export default {
 
                 "addToAlbumClosed":()=>this.albumDialogOpen=false,
                 "album":this.eventOpenAddToAlbum,
+
+                "sort":this.eventSort,
             }
         }
     },
