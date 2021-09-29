@@ -12,10 +12,11 @@
                 <v-layout align-center justify-center>
                     <v-flex xs12 sm8 md4>
                         <v-card class="grey darken-1">
+                            <v-card-title class="white--text">{{titleText}}</v-card-title>
                             <v-card-text>
                                 <v-form>
                                 <v-text-field
-                                    prepend-icon="mdi-person"
+                                    prepend-icon="mdi-account"
                                     name="Username"
                                     label="Username"
                                     type="text"
@@ -58,7 +59,11 @@ export default {
         loading: false,
         password:"",
         username:"",
+        /**
+         * true if there is no user and you have to add one first
+         */
         signUp:false,
+
     }),
     methods: {
         async login(){
@@ -68,6 +73,7 @@ export default {
                         username:this.username,
                         password:this.password
                     });
+                    this.signUp = false;
                 }else{
                     await Axios.post("login/",{
                         username:this.username,
@@ -89,6 +95,9 @@ export default {
     computed:{
         btnText(){
             return this.signUp?"Sign up":"Login";
+        },
+        titleText(){
+            return this.signUp?"Sign up":"Sign in";
         }
     },
     watch: {
