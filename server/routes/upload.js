@@ -3,7 +3,7 @@ const routes = require('express').Router();
 
 const Config = require("../config.json");
 const Log = require('../log');
-const cheetahFile = require("../file");
+const cheetahFile = require("../functions/file");
 const asyncHandler = require("../functions/asyncHandler");
 
 const multer  = require('multer')

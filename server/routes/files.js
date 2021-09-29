@@ -4,7 +4,7 @@ const routes = require('express').Router();
 
 const Log = require('../log');
 const Config = require("../config.json");
-const cheetahFile = require("../file");
+const cheetahFile = require("../functions/file");
 const asyncHandler = require("../functions/asyncHandler");
 
 

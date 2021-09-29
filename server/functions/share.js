@@ -4,7 +4,7 @@ const db = require("../db");
 const Log = require("../log");
 const rndStr = require("../rnd").filename;
 const simpledate = require("../helpers").DatetimeToStr;
-const cheetahfile = require("../file");
+const cheetahfile = require("./file");
 const Album = require("./albums");
 
 
