@@ -87,10 +87,10 @@ async function craeteNew(title){
 
     for (let i = 0; i < files.length; i++) {
         
-        let adddate = simpledate(orignaldate);
+        let adddate = simpledate();
         let addtime = ((new Date())/1000);
         Log.info(`trying to add ${files[i]} to ${albumid}`);
-        let x = await db.stmRunAsync(stm,[files[i],albumid],addtime,adddate)
+        let x = await db.stmRunAsync(stm,[files[i],albumid,addtime,adddate])
         Log.info(`added ${files[i]} to ${albumid}`);
     }
 
