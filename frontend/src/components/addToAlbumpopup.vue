@@ -59,6 +59,7 @@
 <script>
 import axios from 'axios';
 import eventhub from "../components/eventhub";
+import axiosError  from "../components/checkAjaxError";
 
 export default {
     props:{
@@ -93,6 +94,7 @@ export default {
                 eventhub.$emit("clear");
             }catch(e){
                 console.log(e);
+                axiosError(e);
             }
         },
         /**
@@ -122,6 +124,7 @@ export default {
                 });
             }catch(e){
                 console.log(e);
+                axiosError(e);
             }
         },
         /**
@@ -134,6 +137,7 @@ export default {
                 console.log(data);
             } catch (error) {
                 console.log(error);
+                axiosError(error);
             }
         }
     },
