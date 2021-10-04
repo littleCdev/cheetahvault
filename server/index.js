@@ -63,7 +63,7 @@ app.use(async(err,req,res,next)=>{
     if(typeof err == "string"){
         res.send({message:err})
     }else{
-        res.json(err);
+        res.send(JSON.stringify(err, Object.getOwnPropertyNames(err)));
     }
 });
 
