@@ -121,13 +121,21 @@ a{
                                     v-else
                                     :width="200"
                                     :height="200"
-                                    class="white--text align-end"
+                                    class="white--text"
+                                    :class="{'pad':item.marked}"
                                     gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                                     contain
                                     src="~@/assets/icon_file.png"
                                 >
+                                    <v-app-bar flat color="rgba(0, 0, 0, 0)" >
+                                        <v-app-bar-nav-icon color="white">
+                                            <v-icon :class="{'onhover':!item.marked}"
+                                                @click.stop="markFile(item)">
+                                                mdi-checkbox-marked-circle
+                                            </v-icon>
+                                        </v-app-bar-nav-icon>
+                                    </v-app-bar>
                                     <v-card-title v-text="item.originalfilename"></v-card-title>
-                                    
                                 </v-img>
                             </v-card>
                         </div>
