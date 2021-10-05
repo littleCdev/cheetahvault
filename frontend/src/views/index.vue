@@ -218,7 +218,9 @@ export default {
          */
         sortoptions: "asc=desc&order=upload",
 
-
+        /**
+         * set to true after login was checked, used to prevent event from grid with no login
+         */
         loginChecked:false,
     }),
     methods: {
@@ -291,6 +293,11 @@ export default {
         },
 
         async onRequestAppend(e) {
+            if(!this.loginChecked){
+                console.log("not running onRequestAppend, login not checked");
+                return;
+            }
+
             console.group("loadmore");
             console.log(e);
             console.groupEnd("loadmore");
@@ -443,6 +450,7 @@ export default {
         }
         
         this.loginChecked = true;
+        this.onRequestAppend();
         this.getAlbums();
 
     },
