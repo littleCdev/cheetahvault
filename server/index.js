@@ -14,7 +14,8 @@ app.use(Express.urlencoded({ extended: true }));
 app.set('trust proxy', 1) // trust first proxy
 const session = require('express-session')
 var FileStore = require('session-file-store')(session);
-app.use(session({ 
+
+let sessionConfig = { 
     store: new FileStore({}),
     secret: 'secrect?', 
     resave:false,
@@ -25,7 +26,14 @@ app.use(session({
         httpOnly: true,
         secure:true,
     }
-})) 
+};
+// check for production/debug
+if (app.get('env') === 'production') {
+    sessionConfig.cookie.secure = false;
+    sessionConfig.cookie.sameSite = "strict";
+}
+  
+app.use(session(sessionConfig)); 
 
 const bodyParser = require('body-parser')
 app.use(bodyParser.json())
