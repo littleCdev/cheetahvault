@@ -242,6 +242,9 @@ export default {
         if(this.index < 0)
             return;
         this.file = this.files[this.index];
+        // reset tags in case of a new file
+        this.tags = [];
+
         this.getTagsForFile();
     },
     async created(){
@@ -250,6 +253,9 @@ export default {
         });
         
         document.addEventListener('keydown',this.keydownEvent);
+        
+        // get all tags for autocomplete
+        this.getAllTags();
     },
     destroyed() {
         document.removeEventListener("keydown",this.keydownEvent);
