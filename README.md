@@ -20,10 +20,24 @@ npm run build
 npm run start
 ```
 
+### PM2
+in case you want to use pm2 you can start it with
+```
+npm run startpm2
+```
+for stopping / restarting use
+```
+npm run stoppm2
+and
+npm run restartpm2
+```
+
 Your gallery should be running on port 8089 now.
 
 ### Config
-to change the config, use the server/config.json
+to change the config, use the server/config.json.
+
+relative paths are vom ./server/.
 ```json
 {
     // webport to run on
