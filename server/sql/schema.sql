@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `albums`(
     albumtime           INTEGER NOT NULL DEFAULT 0,
     albumkey            VARCHAR(255) NOT NULL DEFAULT '',
     lastupdate          INTEGER NOT NULL DEFAULT 0,
-    coverfile           INTEGER NOT NULL DEFAULT 0,
+    coverfile           INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS `albummap`(
