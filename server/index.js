@@ -1,7 +1,7 @@
 const Log = require("./log.js");
 const Path = require('path');
 const db = require("./db");
-
+const dbupdate = require("./sql/databaseupdate").init;
 
 const Config = require("./config.json");
 
@@ -78,7 +78,7 @@ app.use(async(err,req,res,next)=>{
 (async()=>{
     try{
         await db.init();
-        await db.createSchema("schema.sql");
+        await dbupdate();
         app.listen(Config.webport,Config.bindip,()=>{
             Log.info(`Example app listening at http://${Config.bindip}:${Config.webport}`);
     

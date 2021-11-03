@@ -21,26 +21,6 @@ let init = async function(){
 }
 
 
-let createSchema = async function(filename){
-    let schema = fs.readFileSync(filename) + "";
-    //remove \n
-    schema = schema.replace(/(\r\n|\n|\r)/gm, "");
-
-    let tableSchemas = schema.split(";");
-    try {
-        for (let i = 0; i < tableSchemas.length; i++) {
-            if (tableSchemas[i].length === 0)
-                continue;
-            Log.info("sqlite: running: " + tableSchemas[i]);
-            await db.run(tableSchemas[i]);
-            Log.info("sqlite done");
-        }
-    } catch (e) {
-        Log.critical("sqlite: failed to create db: " + e);
-        return;
-    }
-}
-
 
 /**
  * @typedef {object} sqliterunres
@@ -123,6 +103,5 @@ module.exports={
     run,
     prepare,
     stmRunAsync,
-    init,
-    createSchema
+    init
 }
