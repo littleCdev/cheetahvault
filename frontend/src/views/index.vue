@@ -80,7 +80,7 @@ a{
                         </v-list-item-group>
                     </v-list>
                 </v-col>
-                <v-col cols="10" class="">
+                <v-col sm="12" md="10" class="">
                     <masonry-infinite-grid
                         @request-append="onRequestAppend"
                         class="container"
