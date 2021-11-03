@@ -29,8 +29,9 @@ a{
     border: 5px solid red;
 }
 
-.static{
-    position: fixed;
+.stickyToMenu{
+    position: sticky !important;
+    top: 64px;
 }
 
 .albumlist{
@@ -57,9 +58,9 @@ a{
        
         <v-main>
             <v-row>
-                <v-col cols="2" class="">
+                <v-col  class="d-none d-md-flex " cols="2">
                     <v-list class="transparent">
-                        <v-list-item-group class="static">
+                        <v-list-item-group class="stickyToMenu">
                             <v-list-item
                                 
                                 v-for="(album,index) in albums" :key="index"
@@ -79,7 +80,7 @@ a{
                         </v-list-item-group>
                     </v-list>
                 </v-col>
-                <v-col cols="10" class="">
+                <v-col sm="12" md="10" class="">
                     <masonry-infinite-grid
                         @request-append="onRequestAppend"
                         class="container"
