@@ -20,7 +20,7 @@ a {
 <template>
     <v-app-bar app class="transparent">
         <router-link :to="{ name: 'index' }">
-            <v-toolbar-title> Cheetahvault </v-toolbar-title>
+            <v-toolbar-title class="white--text"> Cheetahvault </v-toolbar-title>
         </router-link>
 
         <template v-if="!titleOnly">
