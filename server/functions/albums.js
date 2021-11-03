@@ -95,6 +95,12 @@ async function craeteNew(title){
     }
 
     stm.finalize();
+
+    await db.run("update albums set lastupdate=?,coverfile=? where id=?",[
+        ((new Date()/1000)),
+        files[files.length-1],
+        albumid
+    ]);
 }
 
 /**
@@ -108,6 +114,20 @@ async function removeFile(albumid,fileid){
         albumid
     ]);
     Log.info(`removed ${fileid} from ${albumid}`);
+
+    // update albumcover
+    let res = await db.single("select fileid from albummap where albumid=? order by addtime DESC",[albumid]);
+
+    let coverid = 0;
+
+    if(res !== null){
+        coverid = res.fileid;
+    }
+    await db.run("update albums set coverfile=?, lastupdate=? where  id=?",[
+        coverid,
+        ((new Date()/1000)),
+        albumid
+    ]);
 }
 
 /**
@@ -116,6 +136,15 @@ async function removeFile(albumid,fileid){
  */
 async function getAll(){
     let res = await db.all("select albums.*,count(albums.id) as imagecount from albums join albummap on albummap.albumid=albums.id group by albums.id");
+
+    for(let i=0;i<res.length;i++){
+        if(res[i].coverfile !== 0){
+            let img = await File.getPublicFile({id:res[i].coverfile});    
+            res[i].coverfile = img;
+        }else            
+            res[i].coverfile = null;
+
+    }
 
     return res;
 }

@@ -1,3 +1,8 @@
+CREATE TABLE IF NOT EXISTS `conf`(
+    currentversion      INTEGER NOT NULL DEFAULT -1 /* change to default version */
+);
+INSERT INTO `conf` (currentversion) VALUES (3);
+
 CREATE TABLE IF NOT EXISTS `files`(
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -54,7 +59,9 @@ CREATE TABLE IF NOT EXISTS `albums`(
     albumname           VARCHAR(255) NOT NULL DEFAULT '',
     albumdate           VARCHAR(255) NOT NULL DEFAULT '',
     albumtime           INTEGER NOT NULL DEFAULT 0,
-    albumkey            VARCHAR(255) NOT NULL DEFAULT ''
+    albumkey            VARCHAR(255) NOT NULL DEFAULT '',
+    lastupdate          INTEGER NOT NULL DEFAULT 0,
+    coverfile           INTEGER NOT NULL DEFAULT 0,
 );
 
 CREATE TABLE IF NOT EXISTS `albummap`(
