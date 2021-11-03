@@ -159,6 +159,7 @@ import axiosError  from "../components/checkAjaxError";
 import trylogin from "../components/checkLogin";
 
 import lightBox from "../components/lightBox.vue";
+import modal from '../components/modal';
 export default {
     components: {
         Menu,
@@ -439,7 +440,15 @@ export default {
     },
 
     async mounted() {
-        let result =await trylogin();
+        let result = "";
+
+        try{
+            result =await trylogin();
+        }catch(e){
+            modal.open("Error",e.stack);
+            return;
+        }
+         
         console.log(result);
         if(result !== "user"){
             console.log("user not logged in, forwarding");
