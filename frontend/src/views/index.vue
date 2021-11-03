@@ -58,29 +58,33 @@ a{
        
         <v-main>
             <v-row>
-                <v-col  class="d-none d-md-flex " cols="2">
-                    <v-list class="transparent">
+                <v-col  class="d-none d-md-flex " cols="3">
+                    <v-list class="transparent" shaped>
                         <v-list-item-group class="stickyToMenu">
+                            <v-list-item>
+                                <v-list-item-content>
+                                    <v-list-item-title class="white--text">Albums</v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+    
                             <v-list-item
-                                
                                 v-for="(album,index) in albums" :key="index"
                                 class="albumlist"
                                 @click="$router.push({name:'album',params:{'key':album.albumkey}})"
-                            >  
+                            >
+                                <v-list-item-avatar size="40">
+                                    <v-img v-if="album.coverfile" :src="$url + 'files/' + album.coverfile.filepath + album.coverfile.thumbnail.file"></v-img>
+                                </v-list-item-avatar>
+    
                                 <v-list-item-content>
-                                    <v-list-item-title>
-                                        {{album.albumname}}
-                                    </v-list-item-title>
-                                    <v-list-item-subtitle>
-                                        {{album.imagecount}} files
-                                    </v-list-item-subtitle>
+                                    <v-list-item-title >{{album.albumname}}</v-list-item-title>
+                                    <v-list-item-subtitle>{{album.imagecount}} files</v-list-item-subtitle>
                                 </v-list-item-content>
-
                             </v-list-item>
                         </v-list-item-group>
                     </v-list>
                 </v-col>
-                <v-col sm="12" md="10" class="">
+                <v-col sm="12" md="9" class="">
                     <masonry-infinite-grid
                         @request-append="onRequestAppend"
                         class="container"
