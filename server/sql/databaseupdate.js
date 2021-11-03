@@ -8,7 +8,19 @@ const NeededDatabseVersion = require("./version.json").databaseversion;
  * @returns {Number}
  */
 async function getCurrentVersion(){
-    let res = await db.single("select currentversion from conf");
+    let res = null;
+
+    try{
+        // check if table exists first
+        res = await db.single("SELECT name FROM sqlite_master WHERE type='table' and name='conf'");
+        if(res == null)
+            return -1;
+
+        res = await db.single("select currentversion from conf");
+    }catch(e){
+        Log.critical(e);
+        return;
+    }
 
     if(res == null){
         return -1;
