@@ -37,6 +37,9 @@ a{
 .albumlist{
     background-color: rgba(71, 71, 71, 0.774) !important;
 }
+.max100w{
+    max-width: 100%;
+}
 </style>>
 
 
@@ -59,7 +62,7 @@ a{
         <v-main>
             <v-row>
                 <v-col  class="d-none d-md-flex " cols="3">
-                    <v-list class="transparent" shaped>
+                    <v-list class="transparent max100w" shaped>
                         <v-list-item-group class="stickyToMenu">
                             <v-list-item>
                                 <v-list-item-content>
@@ -76,7 +79,7 @@ a{
                                     <v-img v-if="album.coverfile" :src="$url + 'files/' + album.coverfile.filepath + album.coverfile.thumbnail.file"></v-img>
                                 </v-list-item-avatar>
     
-                                <v-list-item-content>
+                                <v-list-item-content class="truncate">
                                     <v-list-item-title >{{album.albumname}}</v-list-item-title>
                                     <v-list-item-subtitle>{{album.imagecount}} files</v-list-item-subtitle>
                                 </v-list-item-content>
